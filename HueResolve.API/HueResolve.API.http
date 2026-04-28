@@ -1,0 +1,6 @@
+@HueResolve.API_HostAddress = http://localhost:5110
+
+GET {{HueResolve.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
