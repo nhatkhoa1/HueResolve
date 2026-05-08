@@ -1,0 +1,112 @@
+﻿@{
+    string currentController = ViewContext.RouteData.Values["Controller"]?.ToString() ?? "";
+    string currentAction = ViewContext.RouteData.Values["Action"]?.ToString() ?? "";
+}
+
+<style>
+    #sidebar-wrapper {
+        width: var(--sidebar-width);
+        background: #ffffff;
+        border-right: 1px solid var(--border-color);
+        position: fixed;
+        height: 100vh;
+        z-index: 1000;
+        transition: all 0.3s;
+    }
+
+    .sidebar-brand {
+        height: var(--header-height);
+        display: flex;
+        align-items: center;
+        padding: 0 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .sidebar-nav {
+        padding: 1.5rem 0.75rem;
+    }
+
+    .nav-label {
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-uppercase;
+        color: #94a3b8;
+        padding: 1rem 1rem 0.5rem;
+        letter-spacing: 1px;
+    }
+
+    .menu-item {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        color: #475569;
+        text-decoration: none;
+        border-radius: 10px;
+        font-weight: 500;
+        margin-bottom: 4px;
+        transition: all 0.2s;
+    }
+
+        .menu-item i {
+            width: 20px;
+            margin-right: 12px;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        .menu-item:hover {
+            background: #f1f5f9;
+            color: var(--handler-indigo);
+        }
+
+        .menu-item.active {
+            background: #eef2ff;
+            color: var(--handler-indigo);
+        }
+
+    .dept-info {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        padding: 1.5rem;
+        background: #fafafa;
+        border-top: 1px solid var(--border-color);
+    }
+</style>
+
+<div id="sidebar-wrapper">
+    <div class="sidebar-brand">
+        <span class="fw-bolder fs-5" style="color: var(--handler-indigo);">
+            <i class="fa-solid fa-shield-halved me-2"></i>HUE RESOLVE
+        </span>
+    </div>
+
+    <div class="sidebar-nav">
+        <div class="nav-label">Công việc</div>
+
+        <a href="@Url.Action("Index", "Dashboard")" class="menu-item @(currentController == "Dashboard" ? "active" : "")">
+            <i class="fa-solid fa-house-chimney"></i> Bàn làm việc
+        </a>
+
+        <a href="@Url.Action("Index", "Report")" class="menu-item @(currentController == "Report" && currentAction == "Index" ? "active" : "")">
+            <i class="fa-solid fa-thumbtack"></i> Nhiệm vụ được giao
+        </a>
+
+        <div class="nav-label">Quản lý</div>
+
+        <a href="@Url.Action("Index", "Report", new { status = "HoanThanh" })" class="menu-item @(currentAction == "History" ? "active" : "")">
+            <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử xử lý
+        </a>
+
+        <div class="nav-label">Cá nhân</div>
+        <a href="@Url.Action("Profile", "Account")" class="menu-item @(currentController == "Account" ? "active" : "")">
+            <i class="fa-solid fa-id-card"></i> Hồ sơ đơn vị
+        </a>
+    </div>
+
+    <div class="dept-info">
+        <div class="small text-muted mb-1">Đang đăng nhập:</div>
+        <div class="fw-bold text-dark text-truncate">@ViewBag.DepartmentName</div>
+        <div class="text-muted" style="font-size: 0.7rem;">Cán bộ xử lý</div>
+    </div>
+</div>

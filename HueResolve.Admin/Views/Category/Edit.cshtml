@@ -1,0 +1,37 @@
+﻿@model HueResolve.Models.Model.Category
+@{
+    ViewData["Title"] = "Sửa Lĩnh vực";
+}
+
+<div class="mb-4">
+    <a href="@Url.Action("Index")" class="text-decoration-none text-muted fw-medium small">
+        <i class="fa-solid fa-arrow-left me-1"></i> Quay lại danh sách
+    </a>
+    <h4 class="fw-bold mt-2" style="color: var(--text-main);">Cập nhật Lĩnh vực</h4>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="card-body p-4 p-xl-5">
+        <form action="@Url.Action("Edit")" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="Id" value="@Model.Id" />
+            <div class="mb-4">
+                <label class="form-label fw-bold small text-dark">Mã danh mục <span class="text-danger">*</span></label>
+                <input type="text" name="Code" value="@(Model.Code)" class="form-control rounded-3 py-2" required placeholder="VD: GiaoThong, MoiTruong..." />
+            </div>
+            <div class="mb-4">
+                <label class="form-label fw-bold small text-dark">Tên lĩnh vực <span class="text-danger">*</span></label>
+                <input type="text" name="Name" value="@Model.Name" class="form-control rounded-3 py-2" required />
+            </div>
+            <div class="mb-4">
+                <label class="form-label fw-bold small text-dark">Mô tả định hướng cho AI phân loại</label>
+                <textarea name="Description" class="form-control rounded-3" rows="5">@Model.Description</textarea>
+            </div>
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn text-white px-5 py-2 fw-bold shadow-sm" style="background: var(--accent-blue); border-radius: 10px;">
+                    CẬP NHẬT
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

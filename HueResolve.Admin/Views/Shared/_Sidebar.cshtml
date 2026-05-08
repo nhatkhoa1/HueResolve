@@ -1,0 +1,60 @@
+﻿@{
+    string currentController = ViewContext.RouteData.Values["Controller"]?.ToString() ?? "";
+}
+
+<div id="sidebar-wrapper">
+    <div class="user-profile-sidebar">
+        <div class="rounded-circle d-flex align-items-center justify-content-center me-3"
+             style="width: 40px; height: 40px; background: var(--accent-blue);">
+            <i class="fa-solid fa-user-tie text-white fs-5"></i>
+        </div>
+        <div class="overflow-hidden">
+            <div class="text-white fw-bold small text-truncate">
+                @if (ViewBag.FullName != null)
+                {
+                    @ViewBag.FullName
+                }
+                else
+                {
+                    @User.Identity?.Name
+                }
+            </div>
+            <div style="color: #64748b; font-size: 0.65rem;" class="text-uppercase fw-bold">
+                @if (ViewBag.Role != null)
+                {
+                    @ViewBag.Role
+                }
+                else
+                {
+                    <text>Administrator</text>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <div class="px-4 py-2 text-uppercase" style="color: #475569; font-size: 0.65rem; font-weight: 800; letter-spacing: 1px;">Menu chính</div>
+
+        <a href="@Url.Action("Index", "Dashboard")" class="menu-item @(currentController == "Dashboard" ? "active" : "")">
+            <i class="fa-solid fa-gauge-high"></i> Tổng quan
+        </a>
+        <a href="@Url.Action("Index", "Report")" class="menu-item @(currentController == "Report" ? "active" : "")">
+            <i class="fa-solid fa-clipboard-list"></i> Quản lý Phản ánh
+        </a>
+        <a href="@Url.Action("Index", "Map")" class="menu-item @(currentController == "Map" ? "active" : "")">
+            <i class="fa-solid fa-map-location-dot"></i> Bản đồ Điểm nóng
+        </a>
+
+        <div class="px-4 py-2 mt-3 text-uppercase" style="color: #475569; font-size: 0.65rem; font-weight: 800; letter-spacing: 1px;">Hệ thống</div>
+
+        <a href="@Url.Action("Index", "User")" class="menu-item @(currentController == "User" ? "active" : "")">
+            <i class="fa-solid fa-users-gear"></i> Quản lý Tài khoản
+        </a>
+        <a href="@Url.Action("Index", "Department")" class="menu-item @(currentController == "Department" ? "active" : "")">
+            <i class="fa-solid fa-building-shield"></i> Đơn vị xử lý
+        </a>
+        <a href="@Url.Action("Index", "Category")" class="menu-item @(currentController == "Category" ? "active" : "")">
+            <i class="fa-solid fa-tags"></i> Danh mục sự cố
+        </a>
+    </div>
+</div>

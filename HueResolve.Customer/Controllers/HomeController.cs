@@ -1,32 +1,73 @@
-using HueResolve.Customer.Models;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
+using HueResolve.Business.Services;
 
 namespace HueResolve.Customer.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-
-        public HomeController(ILogger<HomeController> logger)
+        /// <summary>
+        /// Trang chủ: Xem danh sách công khai và Heatmap.
+        /// </summary>
+        public async Task<IActionResult> Index()
         {
-            _logger = logger;
+            var reports = await ReportService.GetAllReportsAsync();
+            /// Chỉ lấy các phản ánh đã duyệt (không lấy hàng rác/nhạy cảm)
+            var publicReports = reports.Where(r => r.Status != "TuChoi").Take(10).ToList();
+
+            return View(publicReports);
         }
 
-        public IActionResult Index()
+        /// <summary>
+        /// Xử lý tra cứu nhanh qua mã TrackingCode.
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> Track(string code)
         {
-            return View();
-        }
+            if (string.IsNullOrWhiteSpace(code)) return RedirectToAction("Index");
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
+            var report = await ReportService.GetByTrackingCodeAsync(code.Trim());
+            if (report == null)
+            {
+                TempData["SearchError"] = "Không tìm thấy phản ánh với mã này.";
+                return RedirectToAction("Index");
+            }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+            /// Gọi Service để lấy danh sách ảnh đính kèm của phản ánh này
+            var attachments = await ReportService.GetAttachmentsAsync(report.Id);
+
+            /// Sử dụng ViewBag để truyền danh sách ảnh sang View
+            ViewBag.Attachments = attachments;
+
+            return View(report);
+        }
+        /// <summary>
+        /// API cung cấp dữ liệu bản đồ cho Landing Page (Chế độ Public).
+        /// Đã lọc bỏ dữ liệu nhạy cảm và các phản ánh không hợp lệ.
+        /// </summary>
+        [HttpGet]
+        /// <summary>
+        /// API cung cấp dữ liệu bản đồ cho người dân.
+        /// Hiển thị các điểm: Mới tiếp nhận, Đang xử lý, và Đã hoàn thành.
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> GetPublicMapData()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            var rawData = await MapService.GetMapDataAsync();
+
+            /// Cho phép DangXuLy xuất hiện trên bản đồ công khai
+            var publicData = rawData
+                .Where(r => r.Status == "TiepNhan" || r.Status == "DangXuLy" || r.Status == "HoanThanh")
+                .Select(r => new
+                {
+                    r.TrackingCode,
+                    r.Title,
+                    r.Latitude,
+                    r.Longitude,
+                    r.Status,
+                    r.AddressText
+                });
+
+            return Json(publicData);
         }
     }
 }

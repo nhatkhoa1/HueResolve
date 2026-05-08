@@ -1,0 +1,111 @@
+﻿@model HueResolve.Models.Model.Report
+@{
+    ViewData["Title"] = "Tra cứu phản ánh #" + Model.TrackingCode;
+
+    var (statusClass, statusText) = Model.Status switch
+    {
+        "TiepNhan" => ("bg-info text-dark", "Đã tiếp nhận"),
+        "DangXuLy" => ("bg-warning text-dark", "Đang xử lý thực địa"),
+        "HoanThanh" => ("bg-success text-white", "Đã hoàn thành"),
+        "TuChoi" => ("bg-danger text-white", "Từ chối xử lý"),
+        _ => ("bg-secondary text-white", Model.Status)
+    };
+}
+
+<div class="container py-5">
+    <div class="mb-4">
+        <a href="@Url.Action("Index", "Home")" class="btn btn-sm btn-outline-secondary fw-bold rounded-pill px-3">
+            <i class="fa-solid fa-arrow-left me-2"></i> Về Trang chủ
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="card-header bg-white p-4 border-bottom d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+                <div class="text-muted small fw-bold text-uppercase mb-1">Kết quả tra cứu mã</div>
+                <h4 class="fw-bold text-primary m-0">#@Model.TrackingCode</h4>
+            </div>
+            <div>
+                <span class="badge @statusClass px-3 py-2 rounded-pill fs-6 shadow-sm">
+                    @statusText
+                </span>
+            </div>
+        </div>
+
+        <div class="card-body p-4 p-md-5">
+            <h3 class="fw-bold mb-3 text-dark">@Model.Title</h3>
+
+            <div class="d-flex flex-wrap gap-4 mb-4 text-muted small border-bottom pb-4">
+                <div><i class="fa-regular fa-calendar-check text-primary me-1"></i> <b>Ngày gửi:</b> @Model.CreatedAtUtc.AddHours(7).ToString("dd/MM/yyyy")</div>
+                <div><i class="fa-solid fa-location-dot text-danger me-1"></i> <b>Địa chỉ:</b> @Model.AddressText</div>
+            </div>
+
+            <div class="mb-5">
+                <h6 class="fw-bold text-uppercase text-muted mb-3">Nội dung phản ánh:</h6>
+                <div class="p-4 bg-light rounded-4 text-dark shadow-sm" style="line-height: 1.8;">
+                    @Model.Description
+                </div>
+            </div>
+
+            @{
+                var attachments = ViewBag.Attachments as IEnumerable<HueResolve.Models.Model.ReportAttachment>;
+            }
+            @if (attachments != null && attachments.Any())
+            {
+                <div class="mb-5">
+                    <h6 class="fw-bold text-uppercase text-muted mb-3"><i class="fa-solid fa-images me-2"></i>Ảnh minh chứng hiện trường</h6>
+                    <div class="row g-3">
+                        @foreach (var img in attachments)
+                        {
+                            var base64 = Convert.ToBase64String(img.FileData);
+                            var imgSrc = $"data:{img.ContentType};base64,{base64}";
+
+                            <div class="col-6 col-md-4 col-lg-3">
+                                <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100"
+                                     style="cursor: pointer;"
+                                     onclick="openImageModal('@imgSrc')">
+                                    <img src="@imgSrc" alt="Ảnh minh chứng" class="img-fluid w-100" style="height: 150px; object-fit: cover; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" />
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            @if (Model.Status == "HoanThanh" && !string.IsNullOrEmpty(Model.ResolutionNote))
+            {
+                <div class="mb-2">
+                    <h6 class="fw-bold text-uppercase text-success mb-3"><i class="fa-solid fa-check-double me-2"></i>Kết quả xử lý từ cơ quan:</h6>
+                    <div class="p-4 rounded-4 border-start border-success border-4" style="background-color: #f0fdf4;">
+                        <p class="mb-0 text-dark" style="line-height: 1.8;">@Model.ResolutionNote</p>
+                        <div class="text-muted small mt-3">Cập nhật lúc: @Model.CompletedAtUtc?.AddHours(7).ToString("HH:mm dd/MM/yyyy")</div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="imageViewerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content bg-transparent border-0 shadow-none">
+            <div class="modal-header border-0 pb-0 justify-content-end">
+                <button type="button" class="btn-close btn-close-white fs-4" data-bs-dismiss="modal" aria-label="Close" style="filter: invert(1);"></button>
+            </div>
+            <div class="modal-body text-center pt-0">
+                <img id="modalPreviewImage" src="" class="img-fluid rounded-4 shadow-lg" alt="Phóng to ảnh" style="max-height: 85vh;" />
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* Hàm Javascript xử lý việc mở ảnh lên Modal bằng Bootstrap 5 */
+    function openImageModal(imgSource) {
+        /* Gán đường dẫn ảnh Base64 vào thẻ img trong Modal */
+        document.getElementById('modalPreviewImage').src = imgSource;
+
+        /* Khởi tạo và hiển thị Modal */
+        var imageModal = new bootstrap.Modal(document.getElementById('imageViewerModal'));
+        imageModal.show();
+    }
+</script>

@@ -1,0 +1,179 @@
+﻿@{
+    ViewData["Title"] = "Bản đồ Điểm nóng";
+}
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<style>
+    /* CSS Tùy chỉnh thanh cuộn và hiệu ứng hover */
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: #f1f5f9;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+    }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+    .list-item-hover:hover {
+        background-color: #f8fafc;
+        transition: all 0.2s;
+    }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold m-0" style="color: var(--text-main);">Bản đồ Phản ánh Hiện trường</h4>
+</div>
+
+<div class="row g-4" style="height: 75vh;">
+    <div class="col-lg-4 col-xl-3 h-100">
+        <div class="card border-0 shadow-sm rounded-4 h-100 d-flex flex-column overflow-hidden">
+            <div class="card-body p-4 pb-3 flex-shrink-0">
+                <h6 class="fw-bold text-dark mb-3"><i class="fa-solid fa-filter me-2 text-primary"></i>Bộ lọc Bản đồ</h6>
+                <div class="mb-3">
+                    <select id="categoryFilter" class="form-select form-select-sm rounded-3 shadow-sm border-0 bg-light">
+                        <option value="">-- Tất cả lĩnh vực --</option>
+                        @foreach (var cat in ViewBag.Categories as IEnumerable<HueResolve.Models.Model.Category> ?? Enumerable.Empty<HueResolve.Models.Model.Category>())
+                        {
+                            <option value="@cat.Id">@cat.Name</option>
+                        }
+                    </select>
+                </div>
+                <button type="button" id="btnFilterMap" class="btn btn-sm w-100 text-white fw-bold shadow-sm mb-3" style="background: var(--accent-blue); border-radius: 8px;">
+                    ÁP DỤNG LỌC
+                </button>
+
+                <div class="d-flex justify-content-between flex-wrap gap-2">
+                    <div class="d-flex align-items-center"><div class="rounded-circle me-1 shadow-sm" style="width: 10px; height: 10px; background-color: #3b82f6;"></div><span style="font-size: 0.65rem;" class="fw-medium text-muted">Tiếp nhận</span></div>
+                    <div class="d-flex align-items-center"><div class="rounded-circle me-1 shadow-sm" style="width: 10px; height: 10px; background-color: #f59e0b;"></div><span style="font-size: 0.65rem;" class="fw-medium text-muted">Đang xử lý</span></div>
+                    <div class="d-flex align-items-center"><div class="rounded-circle me-1 shadow-sm" style="width: 10px; height: 10px; background-color: #10b981;"></div><span style="font-size: 0.65rem;" class="fw-medium text-muted">Hoàn thành</span></div>
+                    <div class="d-flex align-items-center"><div class="rounded-circle me-1 shadow-sm" style="width: 10px; height: 10px; background-color: #ef4444;"></div><span style="font-size: 0.65rem;" class="fw-medium text-muted">Từ chối</span></div>
+                </div>
+            </div>
+
+            <div class="bg-light px-4 py-2 border-top border-bottom fw-bold text-dark d-flex justify-content-between align-items-center" style="font-size: 0.85rem;">
+                <span>Danh sách kết quả</span>
+                <span class="badge bg-primary rounded-pill" id="resultCount">0</span>
+            </div>
+
+            <div id="reportListContainer" class="flex-grow-1 overflow-auto custom-scrollbar bg-white">
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8 col-xl-9 h-100">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+            <div id="map" style="height: 100%; width: 100%; z-index: 1;"></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    /* Khởi tạo bản đồ */
+    var map = L.map('map').setView([16.4637, 107.5909], 13);
+    var markersLayer = L.layerGroup().addTo(map);
+
+    /* Tải Tiles (Giao diện bản đồ) từ OpenStreetMap */
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    /* Hàm chọn màu Marker và Badge */
+    function getStatusTheme(status) {
+        if (status === 'TiepNhan') return { color: '#3b82f6', text: 'Tiếp nhận', badgeClass: 'bg-primary text-primary' };
+        if (status === 'DangXuLy') return { color: '#f59e0b', text: 'Đang xử lý', badgeClass: 'bg-warning text-warning' };
+        if (status === 'HoanThanh') return { color: '#10b981', text: 'Hoàn thành', badgeClass: 'bg-success text-success' };
+        return { color: '#ef4444', text: 'Từ chối', badgeClass: 'bg-danger text-danger' };
+    }
+
+    /* Hàm render Marker tùy chỉnh */
+    function createCustomIcon(color) {
+        return L.divIcon({
+            className: 'custom-div-icon',
+            html: `<div style="background-color: ${color}; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></div>`,
+            iconSize: [16, 16],
+            iconAnchor: [8, 8]
+        });
+    }
+
+    /* Hàm focus bản đồ khi click vào danh sách */
+    function focusMap(lat, lng) {
+        map.flyTo([lat, lng], 17, { duration: 1.5 });
+    }
+
+    /* Hàm tải dữ liệu qua API, cập nhật Bản đồ và Danh sách */
+    function loadMapData() {
+        var categoryId = document.getElementById('categoryFilter').value;
+        var url = '@Url.Action("GetMapData", "Map")';
+
+        if (categoryId) {
+            url += '?categoryId=' + categoryId;
+        }
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                markersLayer.clearLayers();
+                var listContainer = document.getElementById('reportListContainer');
+                listContainer.innerHTML = '';
+
+                document.getElementById('resultCount').innerText = data.length;
+
+                if (data.length === 0) {
+                    listContainer.innerHTML = '<div class="text-center text-muted mt-5 small">Không có dữ liệu phù hợp.</div>';
+                    return;
+                }
+
+                data.forEach(item => {
+                    var theme = getStatusTheme(item.status);
+
+                    /* 1. Vẽ lên bản đồ */
+                    if (item.latitude && item.longitude) {
+                        var icon = createCustomIcon(theme.color);
+                        var popupContent = `
+                            <div style="font-family: 'Inter', sans-serif;">
+                                <div class="fw-bold text-primary mb-1">#${item.trackingCode}</div>
+                                <div class="fw-bold text-dark mb-2" style="font-size: 14px;">${item.title}</div>
+                                <div class="small text-muted mb-2"><i class="fa-solid fa-location-dot me-1"></i>${item.addressText}</div>
+                                <a href="/Report/Details/${item.id}" class="btn btn-sm btn-light border w-100" target="_blank" style="font-size: 12px;">Xem chi tiết</a>
+                            </div>
+                        `;
+                        L.marker([item.latitude, item.longitude], { icon: icon })
+                            .bindPopup(popupContent)
+                            .addTo(markersLayer);
+                    }
+
+                    /* 2. Đổ vào danh sách UI */
+                    var listItem = `
+                        <div class="p-3 border-bottom list-item-hover" style="cursor:pointer;" onclick="focusMap(${item.latitude}, ${item.longitude})">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-bold text-primary" style="font-size: 0.8rem;">#${item.trackingCode}</span>
+                                <span class="badge ${theme.badgeClass} bg-opacity-10 border border-opacity-25" style="font-size: 0.65rem;">${theme.text}</span>
+                            </div>
+                            <div class="fw-bold text-dark text-truncate mb-1" style="font-size: 0.85rem;" title="${item.title}">${item.title}</div>
+                            <div class="text-muted text-truncate" style="font-size: 0.75rem;"><i class="fa-solid fa-location-dot me-1"></i>${item.addressText}</div>
+                        </div>
+                    `;
+                    listContainer.innerHTML += listItem;
+                });
+            })
+            .catch(error => console.error('Lỗi khi tải dữ liệu bản đồ:', error));
+    }
+
+    /* Gắn sự kiện nút Lọc */
+    document.getElementById('btnFilterMap').addEventListener('click', loadMapData);
+
+    /* Tải dữ liệu lần đầu khi vào trang */
+    document.addEventListener('DOMContentLoaded', loadMapData);
+</script>

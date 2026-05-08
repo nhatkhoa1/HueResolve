@@ -1,0 +1,287 @@
+﻿@model IEnumerable<HueResolve.Models.Model.Department>
+@{
+    ViewData["Title"] = "Quản lý Đơn vị xử lý";
+
+    @* Ép kiểu an toàn các biến truyền từ Controller *@
+    int currentPage = ViewBag.CurrentPage != null ? (int)ViewBag.CurrentPage : 1;
+    int totalPages = ViewBag.TotalPages != null ? (int)ViewBag.TotalPages : 1;
+    int totalCount = ViewBag.TotalCount != null ? (int)ViewBag.TotalCount : 0;
+    string? currentSearch = ViewBag.CurrentSearch;
+}
+
+<div class="container-fluid px-4 py-4">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+        <div>
+            <h3 class="fw-bold text-dark m-0" style="letter-spacing: -0.5px;">Quản lý Đơn vị xử lý</h3>
+            <p class="text-muted small m-0 mt-1">Hệ thống đang lưu trữ tổng cộng <b class="text-primary">@totalCount</b> đơn vị.</p>
+        </div>
+        <a href="@Url.Action("Create")" class="btn text-white fw-bold shadow-sm rounded-3 py-2 px-3" style="background: var(--accent-success, #10b981);">
+            <i class="fa-solid fa-plus me-2"></i> Thêm Đơn vị
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+        <div class="card-body p-0">
+
+            <div class="p-4 border-bottom bg-white">
+                <form method="get" action="@Url.Action("Index")" class="row g-3">
+                    <div class="col-md-9">
+                        <div class="input-group shadow-sm rounded-3 overflow-hidden border">
+                            <span class="input-group-text bg-white border-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                            <input type="text" name="search" value="@currentSearch" class="form-control border-0 ps-0 text-sm" placeholder="Tìm kiếm theo tên đơn vị, loại, hotline hoặc email...">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-dark w-100 rounded-3 fw-bold shadow-sm py-2">
+                            <i class="fa-solid fa-filter me-2"></i>TÌM KIẾM
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" style="border-collapse: separate; border-spacing: 0;">
+                    <thead class="bg-slate-50">
+                        <tr class="text-uppercase" style="background: #f8fafc;">
+                            <th class="ps-4 py-3 text-muted small fw-bold" style="width: 35%;">Tên đơn vị / Loại hình</th>
+                            <th class="py-3 text-muted small fw-bold" style="width: 25%;">Thông tin liên hệ</th>
+                            <th class="py-3 text-muted small fw-bold text-center" style="width: 15%;">Trạng thái</th>
+                            <th class="py-3 pe-4 text-muted small fw-bold text-end" style="width: 25%;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var dept in Model)
+                            {
+                                <tr>
+                                    <td class="ps-4 py-4">
+                                        <div class="d-flex flex-column">
+                                            <div class="fw-bold text-dark title-link">@dept.Name</div>
+                                            <div class="text-muted small mt-1">
+                                                <i class="fa-solid fa-building me-1 opacity-50"></i>@(string.IsNullOrEmpty(dept.Type) ? "Chưa xác định" : dept.Type)
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <td class="py-4">
+                                        <div class="text-dark small fw-bold">
+                                            <i class="fa-solid fa-phone me-1 text-success"></i>@(string.IsNullOrEmpty(dept.PhoneNumber) ? "Chưa có Hotline" : dept.PhoneNumber)
+                                        </div>
+                                        <div class="text-muted small mt-1">
+                                            <i class="fa-regular fa-envelope me-1 opacity-50"></i>@(string.IsNullOrEmpty(dept.Email) ? "Chưa có Email" : dept.Email)
+                                        </div>
+                                    </td>
+
+                                    <td class="py-4 text-center">
+                                        @if (dept.IsActive)
+                                        {
+                                            <span class="text-success small fw-bold bg-success bg-opacity-10 px-3 py-1 rounded-pill border border-success border-opacity-25">
+                                                Hoạt động
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-danger small fw-bold bg-danger bg-opacity-10 px-3 py-1 rounded-pill border border-danger border-opacity-25">
+                                                Đã khóa
+                                            </span>
+                                        }
+                                    </td>
+
+                                    <td class="py-4 pe-4 text-end">
+                                        <a href="@Url.Action("Edit", new { id = dept.Id })" class="btn btn-sm action-btn fw-bold btn-outline-primary me-2">
+                                            <i class="fa-solid fa-pen-to-square me-1"></i>Sửa
+                                        </a>
+
+                                        <button type="button" class="btn btn-sm action-btn fw-bold me-2 @(dept.IsActive ? "btn-outline-warning" : "btn-outline-success")"
+                                                onclick="openToggleModal('@dept.Id', '@(dept.IsActive ? "false" : "true")', '@dept.Name')">
+                                            <i class="fa-solid @(dept.IsActive ? "fa-lock" : "fa-unlock") me-1"></i>
+                                            @(dept.IsActive ? "Khóa" : "Mở")
+                                        </button>
+
+                                        <button type="button" class="btn btn-sm action-btn fw-bold btn-outline-danger"
+                                                onclick="openDeleteModal('@dept.Id', '@dept.Name')">
+                                            <i class="fa-solid fa-trash-can me-1"></i>Xóa
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center py-5">
+                                    <div class="py-4">
+                                        <i class="fa-regular fa-building display-4 text-muted opacity-25"></i>
+                                        <p class="text-muted mt-3 fst-italic">Không tìm thấy đơn vị nào phù hợp với điều kiện.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (totalPages > 1)
+            {
+                <div class="card-footer bg-white border-0 p-4">
+                    <nav>
+                        <ul class="pagination justify-content-center mb-0 gap-2">
+                            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                                <a class="page-link border rounded-3 shadow-sm" href="@Url.Action("Index", new { page = currentPage - 1, search = currentSearch })">
+                                    <i class="fa-solid fa-arrow-left"></i>
+                                </a>
+                            </li>
+                            @for (int i = 1; i <= totalPages; i++)
+                            {
+                                <li class="page-item @(i == currentPage ? "active" : "")">
+                                    <a class="page-link border rounded-3 shadow-sm @(i == currentPage ? "bg-primary text-white border-primary" : "text-dark bg-white")"
+                                       href="@Url.Action("Index", new { page = i, search = currentSearch })">@i</a>
+                                </li>
+                            }
+                            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                                <a class="page-link border rounded-3 shadow-sm" href="@Url.Action("Index", new { page = currentPage + 1, search = currentSearch })">
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="toggleConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0 justify-content-end">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center pt-0 pb-4 px-4">
+                <div class="mb-3">
+                    <i class="fa-solid fa-circle-exclamation" id="toggleIcon" style="font-size: 4rem;"></i>
+                </div>
+                <h4 class="fw-bold text-dark mb-3">Xác nhận trạng thái</h4>
+                <p class="text-muted mb-0" id="toggleMessage" style="font-size: 0.95rem; line-height: 1.6;"></p>
+            </div>
+            <div class="modal-footer border-0 d-flex justify-content-center gap-2 pt-0 pb-4">
+                <button type="button" class="btn btn-light rounded-3 px-4 fw-bold border" data-bs-dismiss="modal">HỦY BỎ</button>
+                <form action="@Url.Action("ToggleStatus")" method="post" class="m-0">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" id="hiddenToggleId" value="" />
+                    <input type="hidden" name="isActive" id="hiddenIsActive" value="" />
+                    <button type="submit" class="btn text-white rounded-3 px-4 fw-bold shadow-sm" id="btnConfirmToggle">
+                        ĐỒNG Ý
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0 justify-content-end">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center pt-0 pb-4 px-4">
+                <div class="mb-3">
+                    <i class="fa-solid fa-trash-can text-danger" style="font-size: 4rem;"></i>
+                </div>
+                <h4 class="fw-bold text-dark mb-3">Cảnh báo xóa dữ liệu</h4>
+                <p class="text-muted mb-0" id="deleteMessage" style="font-size: 0.95rem; line-height: 1.6;"></p>
+            </div>
+            <div class="modal-footer border-0 d-flex justify-content-center gap-2 pt-0 pb-4">
+                <button type="button" class="btn btn-light rounded-3 px-4 fw-bold border" data-bs-dismiss="modal">KHÔNG XÓA</button>
+                <form action="@Url.Action("Delete")" method="post" class="m-0">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" id="hiddenDeleteId" value="" />
+                    <button type="submit" class="btn btn-danger rounded-3 px-4 fw-bold shadow-sm">
+                        <i class="fa-solid fa-trash-can me-1"></i> XÁC NHẬN XÓA
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --accent-blue: #3b82f6;
+        --border-color: #e2e8f0;
+        --text-main: #1e293b;
+    }
+
+    body {
+        background-color: #f8fafc;
+    }
+
+    .title-link {
+        font-size: 0.95rem;
+    }
+
+    .action-btn {
+        border-radius: 8px;
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        transition: all 0.2s ease;
+    }
+
+    .scrollbar-hidden::-webkit-scrollbar {
+        display: none;
+    }
+
+    .scrollbar-hidden {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    .table thead th {
+        border-bottom: none;
+    }
+
+    .table tbody td {
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+    }
+
+    .table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .card {
+        border-radius: 16px !important;
+    }
+</style>
+
+<script>
+    /* Javascript xử lý việc gán dữ liệu động vào Modal Xác nhận */
+    function openToggleModal(id, isActiveStr, name) {
+        document.getElementById('hiddenToggleId').value = id;
+        document.getElementById('hiddenIsActive').value = isActiveStr;
+
+        const isLocking = isActiveStr === 'false';
+        const color = isLocking ? '#ef4444' : '#10b981';
+        const actionText = isLocking ? 'khóa' : 'mở khóa';
+
+        document.getElementById('toggleMessage').innerHTML = `Hệ thống sẽ <b>${actionText}</b> truy cập đối với đơn vị<br><span class="text-dark fw-bold fs-6">"${name}"</span>`;
+
+        const icon = document.getElementById('toggleIcon');
+        icon.className = isLocking ? 'fa-solid fa-lock' : 'fa-solid fa-unlock';
+        icon.style.color = color;
+
+        const btnConfirm = document.getElementById('btnConfirmToggle');
+        btnConfirm.style.backgroundColor = color;
+        btnConfirm.innerHTML = isLocking ? '<i class="fa-solid fa-lock me-1"></i> Khóa ngay' : '<i class="fa-solid fa-unlock me-1"></i> Mở khóa';
+
+        new bootstrap.Modal(document.getElementById('toggleConfirmModal')).show();
+    }
+
+    function openDeleteModal(id, name) {
+        document.getElementById('hiddenDeleteId').value = id;
+        document.getElementById('deleteMessage').innerHTML = `Bạn có chắc chắn muốn xóa vĩnh viễn đơn vị<br><span class="text-dark fw-bold fs-6">"${name}"</span>?<br/><small class="text-danger mt-2 d-inline-block">Hành động này không thể hoàn tác!</small>`;
+        new bootstrap.Modal(document.getElementById('deleteConfirmModal')).show();
+    }
+</script>

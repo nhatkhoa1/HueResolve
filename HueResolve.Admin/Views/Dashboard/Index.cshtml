@@ -1,0 +1,235 @@
+﻿@model IEnumerable<HueResolve.Models.Model.Report>
+@{
+    ViewData["Title"] = "Tổng quan";
+}
+
+<!-- ═══════════════════════════════════════════
+     TIÊU ĐỀ TRANG
+═══════════════════════════════════════════ -->
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h5 class="fw-bold mb-0" style="color: var(--text-main);">Tổng quan hệ thống</h5>
+        <small class="text-muted">Cập nhật lúc @DateTime.Now.ToString("HH:mm - dd/MM/yyyy")</small>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     4 THẺ THỐNG KÊ
+═══════════════════════════════════════════ -->
+<div class="row g-3 mb-4">
+
+    <!-- Tổng phản ánh -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card-stat d-flex align-items-center gap-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                 style="width:52px;height:52px;background:#eff6ff;">
+                <i class="fa-solid fa-clipboard-list" style="color:#3b82f6;font-size:1.3rem;"></i>
+            </div>
+            <div>
+                <div class="text-muted" style="font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Tổng phản ánh</div>
+                <div class="fw-bold" style="font-size:1.8rem;line-height:1;color:var(--text-main);">@ViewBag.Total</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Đang xử lý -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card-stat d-flex align-items-center gap-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                 style="width:52px;height:52px;background:#fef9c3;">
+                <i class="fa-solid fa-spinner" style="color:#eab308;font-size:1.3rem;"></i>
+            </div>
+            <div>
+                <div class="text-muted" style="font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Đang xử lý</div>
+                <div class="fw-bold" style="font-size:1.8rem;line-height:1;color:var(--text-main);">@ViewBag.DangXuLy</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hoàn thành -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card-stat d-flex align-items-center gap-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                 style="width:52px;height:52px;background:#f0fdf4;">
+                <i class="fa-solid fa-circle-check" style="color:#10b981;font-size:1.3rem;"></i>
+            </div>
+            <div>
+                <div class="text-muted" style="font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Hoàn thành</div>
+                <div class="fw-bold" style="font-size:1.8rem;line-height:1;color:var(--text-main);">@ViewBag.HoanThanh</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Từ chối -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="card-stat d-flex align-items-center gap-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                 style="width:52px;height:52px;background:#fef2f2;">
+                <i class="fa-solid fa-circle-xmark" style="color:#ef4444;font-size:1.3rem;"></i>
+            </div>
+            <div>
+                <div class="text-muted" style="font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Từ chối</div>
+                <div class="fw-bold" style="font-size:1.8rem;line-height:1;color:var(--text-main);">@ViewBag.TuChoi</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     BIỂU ĐỒ + BẢNG PHẢN ÁNH MỚI NHẤT
+═══════════════════════════════════════════ -->
+<div class="row g-3">
+
+    <!-- Biểu đồ Doughnut theo danh mục -->
+    <div class="col-12 col-xl-4">
+        <div class="card-stat h-100">
+            <div class="fw-bold mb-3" style="font-size:0.9rem;color:var(--text-main);">
+                <i class="fa-solid fa-chart-pie me-2" style="color:var(--accent-blue);"></i>
+                Phân loại theo danh mục
+            </div>
+            <div class="d-flex justify-content-center">
+                <canvas id="categoryChart" style="max-height:220px;"></canvas>
+            </div>
+            <!-- Chú thích -->
+            <div class="mt-3 d-flex flex-column gap-1" style="font-size:0.8rem;">
+                <div class="d-flex justify-content-between">
+                    <span><span class="me-2" style="color:#3b82f6;">●</span>Giao thông</span>
+                    <span class="fw-bold">@ViewBag.ChartGiaoThong</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span><span class="me-2" style="color:#10b981;">●</span>Môi trường</span>
+                    <span class="fw-bold">@ViewBag.ChartMoiTruong</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span><span class="me-2" style="color:#f59e0b;">●</span>Hạ tầng</span>
+                    <span class="fw-bold">@ViewBag.ChartHaTang</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span><span class="me-2" style="color:#ef4444;">●</span>An ninh</span>
+                    <span class="fw-bold">@ViewBag.ChartAnNinh</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span><span class="me-2" style="color:#8b5cf6;">●</span>Khác</span>
+                    <span class="fw-bold">@ViewBag.ChartKhac</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bảng phản ánh mới nhất -->
+    <div class="col-12 col-xl-8">
+        <div class="card-stat h-100">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="fw-bold" style="font-size:0.9rem;color:var(--text-main);">
+                    <i class="fa-solid fa-clock-rotate-left me-2" style="color:var(--accent-blue);"></i>
+                    Phản ánh mới nhất
+                </div>
+                <a href="/Report" class="text-decoration-none" style="font-size:0.8rem;color:var(--accent-blue);">
+                    Xem tất cả <i class="fa-solid fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" style="font-size:0.85rem;">
+                    <thead>
+                        <tr style="background:#f8fafc;">
+                            <th class="border-0 text-muted fw-600 py-2" style="font-size:0.75rem;">MÃ</th>
+                            <th class="border-0 text-muted fw-600 py-2" style="font-size:0.75rem;">TIÊU ĐỀ</th>
+                            <th class="border-0 text-muted fw-600 py-2" style="font-size:0.75rem;">KHU VỰC</th>
+                            <th class="border-0 text-muted fw-600 py-2" style="font-size:0.75rem;">TRẠNG THÁI</th>
+                            <th class="border-0 text-muted fw-600 py-2" style="font-size:0.75rem;">NGÀY GỬI</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in Model)
+                        {
+                            <tr>
+                                <!-- Mã tra cứu -->
+                                <td class="border-0 py-2">
+                                    <span class="fw-bold" style="font-size:0.78rem;color:var(--accent-blue);">
+                                        @r.TrackingCode
+                                    </span>
+                                </td>
+
+                                <!-- Tiêu đề (cắt ngắn nếu quá dài) -->
+                                <td class="border-0 py-2">
+                                    <span title="@r.Title">
+                                        @(r.Title.Length > 40 ? r.Title.Substring(0, 40) + "..." : r.Title)
+                                    </span>
+                                </td>
+
+                                <!-- Khu vực -->
+                                <td class="border-0 py-2 text-muted">@r.WardName</td>
+
+                                <!-- Badge trạng thái -->
+                                <td class="border-0 py-2">
+                                    @{
+                                        var (badgeClass, badgeText) = r.Status switch
+                                        {
+                                            "TiepNhan" => ("bg-primary bg-opacity-10 text-primary", "Tiếp nhận"),
+                                            "DangXuLy" => ("bg-warning bg-opacity-10 text-warning", "Đang xử lý"),
+                                            "HoanThanh" => ("bg-success bg-opacity-10 text-success", "Hoàn thành"),
+                                            "TuChoi" => ("bg-danger  bg-opacity-10 text-danger", "Từ chối"),
+                                            _ => ("bg-secondary bg-opacity-10 text-secondary", r.Status)
+                                        };
+                                    }
+                                    <span class="badge rounded-pill px-2 py-1 @badgeClass" style="font-size:0.72rem;">
+                                        @badgeText
+                                    </span>
+                                </td>
+
+                                <!-- Ngày gửi -->
+                                <td class="border-0 py-2 text-muted">
+                                    @r.CreatedAtUtc.AddHours(7).ToString("dd/MM/yyyy")
+                                </td>
+                            </tr>
+                        }
+
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="5" class="border-0 text-center text-muted py-4">
+                                    <i class="fa-regular fa-folder-open me-2"></i>Chưa có phản ánh nào.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     CHART.JS — BIỂU ĐỒ DOUGHNUT
+═══════════════════════════════════════════ -->
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script>
+        const ctx = document.getElementById('categoryChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Giao thông', 'Môi trường', 'Hạ tầng', 'An ninh', 'Khác'],
+                datasets: [{
+                    data: [
+                        @ViewBag.ChartGiaoThong,
+                        @ViewBag.ChartMoiTruong,
+                        @ViewBag.ChartHaTang,
+                        @ViewBag.ChartAnNinh,
+                        @ViewBag.ChartKhac
+                    ],
+                    backgroundColor: ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6'],
+                    borderWidth: 0,
+                    hoverOffset: 6
+                }]
+            },
+            options: {
+                cutout: '70%',
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    </script>
+}

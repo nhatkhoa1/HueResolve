@@ -1,0 +1,281 @@
+﻿@model IEnumerable<HueResolve.Models.Model.Report>
+@{
+    ViewData["Title"] = "Danh sách Phản ánh";
+
+    @* Khởi tạo an toàn các biến ViewBag *@
+    int currentPage = ViewBag.CurrentPage != null ? (int)ViewBag.CurrentPage : 1;
+    int totalPages = ViewBag.TotalPages != null ? (int)ViewBag.TotalPages : 1;
+    string? currentStatus = ViewBag.CurrentStatus;
+    int? currentCategoryId = ViewBag.CurrentCategoryId;
+    string? currentSearch = ViewBag.CurrentSearch;
+
+    int countAll = ViewBag.CountAll != null ? (int)ViewBag.CountAll : 0;
+    int countTiepNhan = ViewBag.CountTiepNhan != null ? (int)ViewBag.CountTiepNhan : 0;
+    int countDangXuLy = ViewBag.CountDangXuLy != null ? (int)ViewBag.CountDangXuLy : 0;
+    int countHoanThanh = ViewBag.CountHoanThanh != null ? (int)ViewBag.CountHoanThanh : 0;
+    int countTuChoi = ViewBag.CountTuChoi != null ? (int)ViewBag.CountTuChoi : 0;
+
+    @* Danh sách các Tab lọc trạng thái *@
+    var tabs = new[] {
+        new { Status = (string?)null, Name = "Tất cả", Count = countAll, Class = "text-secondary" },
+        new { Status = "TiepNhan", Name = "Mới tiếp nhận", Count = countTiepNhan, Class = "text-primary" },
+        new { Status = "DangXuLy", Name = "Đang xử lý", Count = countDangXuLy, Class = "text-warning" },
+        new { Status = "HoanThanh", Name = "Đã hoàn thành", Count = countHoanThanh, Class = "text-success" },
+        new { Status = "TuChoi", Name = "Đã từ chối", Count = countTuChoi, Class = "text-danger" }
+    };
+}
+
+<div class="container-fluid px-4 py-4">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+        <div>
+            <h3 class="fw-bold text-dark m-0" style="letter-spacing: -0.5px;">Quản lý Phản ánh Hiện trường</h3>
+            <p class="text-muted small m-0 mt-1">Hệ thống ghi nhận tổng cộng <b class="text-primary">@ViewBag.TotalCount</b> phản ánh từ người dân.</p>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+        <div class="card-body p-0">
+
+            <div class="d-flex border-bottom px-3 bg-light bg-opacity-50 overflow-auto scrollbar-hidden">
+                @foreach (var tab in tabs)
+                {
+                    bool isActive = currentStatus == tab.Status;
+                    <a href="@Url.Action("Index", new { status = tab.Status, categoryId = currentCategoryId, search = currentSearch })"
+                       class="py-3 px-4 text-decoration-none fw-bold small transition-all @(isActive ? "border-bottom border-3 border-primary text-primary" : "text-muted hover-primary")"
+                       style="white-space: nowrap;">
+                        @tab.Name
+                        <span class="badge rounded-pill ms-1 @(isActive ? "bg-primary text-white" : "bg-white text-muted border")">@tab.Count</span>
+                    </a>
+                }
+            </div>
+
+            <div class="p-4 border-bottom bg-white">
+                <form method="get" action="@Url.Action("Index")" class="row g-3">
+                    <input type="hidden" name="status" value="@currentStatus" />
+                    <div class="col-md-5">
+                        <div class="input-group shadow-sm rounded-3 overflow-hidden border">
+                            <span class="input-group-text bg-white border-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                            <input type="text" name="search" class="form-control border-0 ps-0 text-sm" placeholder="Tìm tiêu đề, mã phản ánh, tên người gửi..." value="@currentSearch">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <select name="categoryId" class="form-select shadow-sm rounded-3 border fw-medium" onchange="this.form.submit()">
+                            <option value="">-- Tất cả lĩnh vực sự cố --</option>
+                            @if (ViewBag.Categories != null)
+                            {
+                                foreach (var cat in (IEnumerable<HueResolve.Models.Model.Category>)ViewBag.Categories)
+                                {
+                                    <option value="@cat.Id" selected="@(currentCategoryId == cat.Id)">@cat.Name</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-dark w-100 rounded-3 fw-bold shadow-sm py-2">
+                            <i class="fa-solid fa-filter me-2"></i>ÁP DỤNG LỌC
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" style="border-collapse: separate; border-spacing: 0;">
+                    <thead class="bg-slate-50">
+                        <tr class="text-uppercase" style="background: #f8fafc;">
+                            <th class="ps-4 py-3 text-muted small fw-bold" style="width: 12%;">Mã PA</th>
+                            <th class="py-3 text-muted small fw-bold" style="width: 25%;">Tiêu đề</th>
+                            <th class="py-3 text-muted small fw-bold" style="width: 15%;">Người gửi</th>
+                            <th class="py-3 text-muted small fw-bold text-center" style="width: 12%;">Lĩnh vực</th>
+                            <th class="py-3 text-muted small fw-bold text-center" style="width: 12%;">Trạng thái</th>
+                            <th class="py-3 text-muted small fw-bold text-center" style="width: 12%;">Thời gian</th>
+                            <th class="py-3 pe-4 text-muted small fw-bold text-end" style="width: 12%;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="ps-4 py-4">
+                                        <span class="badge bg-light text-dark border fw-normal" style="font-size: 0.8rem; letter-spacing: 0.5px;">@item.TrackingCode</span>
+                                    </td>
+
+                                    <td class="py-4">
+                                        <a href="@Url.Action("Details", "Report", new { id = item.Id })" class="text-decoration-none text-dark fw-bold title-link" title="@item.Title">
+                                            @(item.Title.Length > 50 ? item.Title.Substring(0, 47) + "..." : item.Title)
+                                        </a>
+                                    </td>
+
+                                    <td class="py-4 text-muted small">
+                                        <i class="fa-regular fa-user me-1"></i>
+                                        @(string.IsNullOrEmpty(item.ReporterName) ? "Nặc danh" : item.ReporterName)
+                                    </td>
+
+                                    <td class="py-4 text-center">
+                                        @{
+                                            var categoryList = ViewBag.Categories as IEnumerable<HueResolve.Models.Model.Category>;
+                                            var category = categoryList?.FirstOrDefault(c => c.Id == item.CategoryId);
+                                            <span class="text-dark fw-medium small p-2 rounded-3 bg-light border">@(category?.Name ?? "Chưa rõ")</span>
+                                        }
+                                    </td>
+
+                                    <td class="py-4 text-center">
+                                        @switch (item.Status)
+                                        {
+                                            case "TiepNhan":
+                                                <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-bold border border-primary border-opacity-25">Mới tiếp nhận</span>
+                                                break;
+                                            case "DangXuLy":
+
+                                                <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-2 rounded-pill fw-bold border border-warning border-opacity-25">Đang xử lý</span>
+                                                break;
+                                            case "HoanThanh":
+
+                                                <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill fw-bold border border-success border-opacity-25">Hoàn thành</span>
+                                                break;
+                                            case "TuChoi":
+
+                                                <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill fw-bold border border-danger border-opacity-25">Đã từ chối</span>
+                                                break;
+                                            default:
+
+                                                <span class="badge bg-secondary text-white px-3 py-2 rounded-pill fw-bold">@item.Status</span>
+                                                break;
+                                        }
+                                    </td>
+
+                                    <td class="py-4 text-center">
+                                        <div class="text-dark fw-medium small">@item.CreatedAtUtc.AddHours(7).ToString("HH:mm")</div>
+                                        <div class="text-muted" style="font-size: 0.75rem;">@item.CreatedAtUtc.AddHours(7).ToString("dd/MM/yyyy")</div>
+                                    </td>
+
+                                    <td class="py-4 pe-4 text-end">
+                                        <a href="@Url.Action("Details", "Report", new { id = item.Id })" class="view-detail-link fw-bold text-decoration-none">
+                                            Xem chi tiết <i class="fa-solid fa-chevron-right ms-1" style="font-size: 0.7rem;"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center py-5">
+                                    <div class="py-4">
+                                        <i class="fa-regular fa-folder-open display-4 text-muted opacity-25"></i>
+                                        <p class="text-muted mt-3 fst-italic">Không tìm thấy phản ánh nào phù hợp với điều kiện lọc.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (totalPages > 1)
+            {
+                <div class="card-footer bg-white border-0 p-4">
+                    <nav>
+                        <ul class="pagination justify-content-center mb-0 gap-2">
+                            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                                <a class="page-link border rounded-3 shadow-sm" href="@Url.Action("Index", new { page = currentPage - 1, status = currentStatus, categoryId = currentCategoryId, search = currentSearch })">
+                                    <i class="fa-solid fa-arrow-left"></i>
+                                </a>
+                            </li>
+                            @for (int i = 1; i <= totalPages; i++)
+                            {
+                                <li class="page-item @(i == currentPage ? "active" : "")">
+                                    <a class="page-link border rounded-3 shadow-sm @(i == currentPage ? "bg-primary text-white border-primary" : "text-dark bg-white")"
+                                       href="@Url.Action("Index", new { page = i, status = currentStatus, categoryId = currentCategoryId, search = currentSearch })">@i</a>
+                                </li>
+                            }
+                            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                                <a class="page-link border rounded-3 shadow-sm" href="@Url.Action("Index", new { page = currentPage + 1, status = currentStatus, categoryId = currentCategoryId, search = currentSearch })">
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --accent-blue: #3b82f6;
+        --border-color: #e2e8f0;
+        --text-main: #1e293b;
+    }
+
+    body {
+        background-color: #f8fafc;
+    }
+
+    .transition-all {
+        transition: all 0.3s ease;
+    }
+
+    .hover-primary:hover {
+        color: var(--accent-blue) !important;
+        background: rgba(59, 130, 246, 0.05);
+    }
+
+    .title-link {
+        font-size: 0.95rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+        .title-link:hover {
+            color: var(--accent-blue) !important;
+            text-decoration: underline !important;
+        }
+
+    .view-detail-link {
+        font-size: 0.82rem;
+        color: var(--accent-blue);
+        padding: 8px 14px;
+        background: rgba(59, 130, 246, 0.08);
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+
+        .view-detail-link:hover {
+            background: var(--accent-blue);
+            color: #fff !important;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+    .scrollbar-hidden::-webkit-scrollbar {
+        display: none;
+    }
+
+    .scrollbar-hidden {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    .table thead th {
+        border-bottom: none;
+    }
+
+    .table tbody td {
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+    }
+
+    .table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .card {
+        border-radius: 16px !important;
+    }
+</style>

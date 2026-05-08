@@ -1,0 +1,384 @@
+﻿@{
+    ViewData["Title"] = "Đăng nhập";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng nhập - Cán bộ Xử lý | Hue Resolve</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --sidebar-bg: #0f172a;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-amber: #f59e0b;
+            --content-bg: #f8fafc;
+            --border-color: #e2e8f0;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: var(--content-bg);
+            display: flex;
+            align-items: stretch;
+        }
+
+        /* ── Panel trái ── */
+        .brand-panel {
+            width: 45%;
+            background: var(--sidebar-bg);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .brand-panel::before {
+                content: '';
+                position: absolute;
+                width: 480px;
+                height: 480px;
+                border-radius: 50%;
+                background: rgba(245,158,11,0.07);
+                top: -100px;
+                left: -100px;
+            }
+
+            .brand-panel::after {
+                content: '';
+                position: absolute;
+                width: 280px;
+                height: 280px;
+                border-radius: 50%;
+                background: rgba(16,185,129,0.06);
+                bottom: -60px;
+                right: -60px;
+            }
+
+        .brand-logo {
+            width: 72px;
+            height: 72px;
+            background: var(--accent-amber);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 8px 24px rgba(245,158,11,0.35);
+        }
+
+        .brand-name {
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 1px;
+            position: relative;
+            z-index: 1;
+        }
+
+            .brand-name span {
+                color: var(--accent-amber);
+            }
+
+        .brand-sub {
+            color: #64748b;
+            font-size: 0.75rem;
+            text-align: center;
+            margin-top: 0.4rem;
+            position: relative;
+            z-index: 1;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 600;
+        }
+
+        .role-badge {
+            margin-top: 1.5rem;
+            padding: 0.5rem 1.5rem;
+            border: 1.5px solid rgba(245,158,11,0.4);
+            border-radius: 50px;
+            color: var(--accent-amber);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            position: relative;
+            z-index: 1;
+        }
+
+        .info-cards {
+            margin-top: 3rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            width: 100%;
+            max-width: 280px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .info-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+            .info-card i {
+                color: var(--accent-amber);
+                font-size: 1rem;
+                width: 20px;
+            }
+
+            .info-card span {
+                color: #94a3b8;
+                font-size: 0.78rem;
+            }
+
+        /* ── Panel phải (form) ── */
+        .form-panel {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 2rem;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+        }
+
+            .login-card h2 {
+                font-size: 1.55rem;
+                font-weight: 700;
+                color: var(--text-main);
+                margin-bottom: 0.25rem;
+            }
+
+            .login-card .subtitle {
+                color: var(--text-muted);
+                font-size: 0.875rem;
+                margin-bottom: 2rem;
+            }
+
+        .form-label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-main);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.4rem;
+            display: block;
+        }
+
+        .input-wrap {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+            .input-wrap i {
+                position: absolute;
+                left: 14px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: var(--text-muted);
+                font-size: 0.9rem;
+                z-index: 2;
+            }
+
+            .input-wrap input {
+                width: 100%;
+                height: 48px;
+                padding-left: 2.6rem;
+                border: 1.5px solid var(--border-color);
+                border-radius: 10px;
+                font-size: 0.9rem;
+                font-family: inherit;
+                background: #fff;
+                color: var(--text-main);
+                transition: border-color 0.2s, box-shadow 0.2s;
+                outline: none;
+            }
+
+                .input-wrap input:focus {
+                    border-color: var(--accent-amber);
+                    box-shadow: 0 0 0 3px rgba(245,158,11,0.12);
+                }
+
+        .alert-error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            color: #dc2626;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .btn-login {
+            width: 100%;
+            height: 48px;
+            background: var(--accent-amber);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+            .btn-login:hover {
+                background: #d97706;
+            }
+
+            .btn-login:active {
+                transform: scale(0.98);
+            }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        @@media (max-width: 768px) {
+            .brand-panel {
+                display: none;
+            }
+
+            .form-panel {
+                padding: 2rem 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Panel trái: thương hiệu -->
+    <div class="brand-panel">
+        <div class="brand-logo">
+            <i class="fa-solid fa-hard-hat text-white" style="font-size: 2rem;"></i>
+        </div>
+        <div class="brand-name">HUE <span>RESOLVE</span></div>
+        <div class="brand-sub">Hệ thống Xử lý Phản ánh</div>
+        <div class="role-badge">
+            <i class="fa-solid fa-building-shield me-2"></i>Cổng Đơn vị Xử lý
+        </div>
+
+        <div class="info-cards">
+            <div class="info-card">
+                <i class="fa-solid fa-list-check"></i>
+                <span>Xem danh sách phản ánh được phân công</span>
+            </div>
+            <div class="info-card">
+                <i class="fa-solid fa-arrows-rotate"></i>
+                <span>Cập nhật tiến độ xử lý thực địa</span>
+            </div>
+            <div class="info-card">
+                <i class="fa-solid fa-camera"></i>
+                <span>Đính kèm ảnh minh chứng kết quả</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel phải: form -->
+    <div class="form-panel">
+        <div class="login-card">
+            <h2>Đăng nhập Xử lý</h2>
+            <p class="subtitle">
+                Dành cho <strong>Cán bộ Đơn vị chức năng</strong> được cấp tài khoản xử lý phản ánh.
+                <br />
+                <span style="font-size: 0.8rem; color: #94a3b8;">
+                    Nếu bạn là Cán bộ IOC, vui lòng đăng nhập qua
+                    <a href="#" style="color: var(--accent-amber); text-decoration: none; font-weight: 600;">Hệ thống Quản trị</a>.
+                </span>
+            </p>
+
+            @if (ViewBag.Error != null)
+            {
+                <div class="alert-error">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    @ViewBag.Error
+                </div>
+            }
+
+            <form action="/Account/Login" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label class="form-label" for="username">Tên đăng nhập</label>
+                    <div class="input-wrap">
+                        <i class="fa-regular fa-user"></i>
+                        <input type="text"
+                               id="username"
+                               name="username"
+                               placeholder="Nhập tên đăng nhập..."
+                               value="@(ViewBag.Username ?? string.Empty)"
+                               autocomplete="username"
+                               autofocus
+                               required />
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="password">Mật khẩu</label>
+                    <div class="input-wrap">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password"
+                               id="password"
+                               name="password"
+                               placeholder="Nhập mật khẩu..."
+                               autocomplete="current-password"
+                               required />
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-login">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    Đăng nhập
+                </button>
+            </form>
+
+            <div class="login-footer">
+                © 2026 <strong>Hue Resolve</strong> · Hệ thống Phản ánh Hiện trường Thông minh
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+﻿<style>
+    .main-header {
+        height: var(--header-height);
+        background: #ffffff;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 2rem;
+        position: sticky;
+        top: 0;
+        z-index: 999;
+    }
+</style>
+
+<header class="main-header">
+    <div class="d-flex align-items-center">
+        <button class="btn btn-light border-0 rounded-circle me-3" id="menu-toggle">
+            <i class="fa-solid fa-bars-staggered"></i>
+        </button>
+        <div class="fw-medium text-muted">@DateTime.Now.ToString("dddd, dd MMMM yyyy")</div>
+    </div>
+
+    <div class="d-flex align-items-center gap-3">
+        <div class="dropdown">
+            <button class="btn btn-light border-0 rounded-circle position-relative" data-bs-toggle="dropdown">
+                <i class="fa-solid fa-bell text-muted"></i>
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white" style="font-size: 0.6rem;">
+                    3
+                </span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-4 p-2 mt-3" style="width: 300px;">
+                <li class="dropdown-header fw-bold">Thông báo mới</li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item rounded-3 py-2 small" href="#">Có phản ánh mới từ Admin IOC</a></li>
+                <li><a class="dropdown-item rounded-3 py-2 small" href="#">Yêu cầu xử lý lại phản ánh #1023</a></li>
+            </ul>
+        </div>
+
+        <div class="vr mx-2 text-muted opacity-25"></div>
+
+        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+            <button type="submit" class="btn btn-link text-decoration-none text-danger fw-bold small p-0">
+                ĐĂNG XUẤT <i class="fa-solid fa-right-from-bracket ms-2"></i>
+            </button>
+        </form>
+    </div>
+</header>

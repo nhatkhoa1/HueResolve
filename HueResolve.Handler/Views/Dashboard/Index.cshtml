@@ -1,0 +1,210 @@
+﻿@model IEnumerable<HueResolve.Models.Model.Report>
+@{
+    ViewData["Title"] = "Bàn làm việc";
+    string deptName = ViewBag.DepartmentName ?? "Đơn vị xử lý";
+}
+
+<style>
+    .stat-card {
+        border: none;
+        border-radius: 20px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+
+    .icon-box {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+
+    .table-container {
+        background: #ffffff;
+        border-radius: 20px;
+        border: 1px solid var(--border-color);
+    }
+
+    .btn-action {
+        border-radius: 10px;
+        padding: 8px 16px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+    }
+</style>
+
+<div class="row mb-4 align-items-center">
+    <div class="col-md-8">
+        <h3 class="fw-bold mb-1" style="color: var(--text-main);">Xin chào, @deptName!</h3>
+        <p class="text-muted mb-0">Hôm nay bạn có <span class="fw-bold text-primary">@ViewBag.CountDangXuLy nhiệm vụ</span> đang cần thực địa.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="@Url.Action("Index", "Report")" class="btn text-white shadow-sm" style="background: var(--handler-indigo); border-radius: 12px; padding: 10px 24px;">
+            <i class="fa-solid fa-list-check me-2"></i> Xem nhiệm vụ
+        </a>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-xl-3 col-sm-6">
+        <div class="card stat-card shadow-sm h-100">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="icon-box bg-primary bg-opacity-10 text-primary">
+                        <i class="fa-solid fa-envelope-open-text"></i>
+                    </div>
+                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill">Phân công mới</span>
+                </div>
+                <h2 class="fw-extrabold mb-1">@ViewBag.CountTiepNhan</h2>
+                <div class="text-muted small fw-medium">Nhiệm vụ vừa được IOC giao</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-sm-6">
+        <div class="card stat-card shadow-sm h-100">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="icon-box bg-warning bg-opacity-10 text-warning">
+                        <i class="fa-solid fa-person-digging"></i>
+                    </div>
+                    <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill">Thực địa</span>
+                </div>
+                <h2 class="fw-extrabold mb-1">@ViewBag.CountDangXuLy</h2>
+                <div class="text-muted small fw-medium">Đang triển khai khắc phục</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-sm-6">
+        <div class="card stat-card shadow-sm h-100" style="background: #fff5f5;">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="icon-box bg-danger bg-opacity-10 text-danger">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                    </div>
+                    <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill">SLA Cảnh báo</span>
+                </div>
+                <h2 class="fw-extrabold mb-1 text-danger">@ViewBag.CountQuaHan</h2>
+                <div class="text-muted small fw-medium">Phản ánh trễ hạn xử lý</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-sm-6">
+        <div class="card stat-card shadow-sm h-100">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="icon-box bg-success bg-opacity-10 text-success">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill">Đã chốt</span>
+                </div>
+                <h2 class="fw-extrabold mb-1">@ViewBag.CountHoanThanh</h2>
+                <div class="text-muted small fw-medium">Tổng kết quả thành công</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="table-container shadow-sm overflow-hidden h-100">
+            <div class="p-4 border-bottom d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold m-0 text-dark">Nhiệm vụ mới cập nhật</h5>
+                <span class="small text-muted">Hiển thị 6 bản ghi gần nhất</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr class="text-muted small text-uppercase fw-bold">
+                            <th class="ps-4 py-3 border-0">Mã / Tiêu đề</th>
+                            <th class="py-3 border-0">Trạng thái</th>
+                            <th class="py-3 border-0">Thời gian nhận</th>
+                            <th class="py-3 border-0 text-end pe-4">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center py-5 text-muted">Hiện tại không có nhiệm vụ nào được giao.</td>
+                            </tr>
+                        }
+                        @foreach (var report in Model)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="fw-bold text-dark mb-0">#@report.TrackingCode</div>
+                                    <div class="small text-muted text-truncate" style="max-width: 250px;">@report.Title</div>
+                                </td>
+                                <td>
+                                    @if (report.Status == "DangXuLy")
+                                    {
+                                        <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-3">Đang xử lý</span>
+                                    }
+                                    else if (report.Status == "HoanThanh")
+                                    {
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3">Hoàn thành</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 rounded-pill px-3">@report.Status</span>
+                                    }
+                                </td>
+                                <td class="small text-dark">
+                                    @report.CreatedAtUtc.AddHours(7).ToString("dd/MM/yyyy HH:mm")
+                                </td>
+                                <td class="text-end pe-4">
+                                    <a href="@Url.Action("Details", "Report", new { id = report.Id })" class="btn btn-light btn-action border shadow-sm" style="color: var(--handler-indigo);">
+                                        Chi tiết
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-body p-4 text-center">
+                <div class="icon-box bg-primary bg-opacity-10 mx-auto mb-3" style="color: var(--handler-indigo);">
+                    <i class="fa-solid fa-circle-info"></i>
+                </div>
+                <h6 class="fw-bold">Quy định xử lý (SLA)</h6>
+                <p class="small text-muted">Các đơn vị có tối đa <b>05 ngày làm việc</b> để phản hồi kết quả kể từ khi nhận phân công từ Admin IOC.</p>
+                <hr class="my-3 opacity-25" />
+                <div class="text-start">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fa-solid fa-check text-success me-2 small"></i>
+                        <span class="small fw-medium">Chụp ảnh hiện trường sau khi sửa</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fa-solid fa-check text-success me-2 small"></i>
+                        <span class="small fw-medium">Ghi rõ phương án đã thực hiện</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4" style="background: linear-gradient(135deg, var(--handler-indigo) 0%, #4338ca 100%);">
+            <div class="card-body p-4 text-white">
+                <h6 class="fw-bold mb-3">Liên hệ điều phối</h6>
+                <p class="small opacity-75">Nếu gặp khó khăn trong việc phối hợp giữa các đơn vị, hãy gọi hotline điều phối:</p>
+                <div class="fs-5 fw-bold"><i class="fa-solid fa-phone-volume me-2"></i> 1900 1075</div>
+            </div>
+        </div>
+    </div>
+</div>

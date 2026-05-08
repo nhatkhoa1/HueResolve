@@ -1,0 +1,254 @@
+﻿@model HueResolve.Models.Model.Report
+@{
+    ViewData["Title"] = "Chi tiết nhiệm vụ xử lý";
+    var attachments = ViewBag.Attachments as IEnumerable<HueResolve.Models.Model.ReportAttachment> ?? Enumerable.Empty<HueResolve.Models.Model.ReportAttachment>();
+
+    // Kiểm tra xem phản ánh còn trong luồng cho phép xử lý hay không
+    bool isEditable = Model.Status == "DangXuLy";
+}
+
+<style>
+    .info-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #94a3b8;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+
+    .content-box {
+        background: #ffffff;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .status-banner {
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+    }
+
+    .img-grid-item {
+        width: 100%;
+        height: 120px;
+        object-fit: cover; /* 🔥 crop ảnh */
+        border-radius: 10px;
+    }
+
+        .img-grid-item:hover {
+            transform: scale(1.03);
+        }
+
+    .btn-delete-img {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        width: 24px;
+        height: 24px;
+        padding: 0;
+        border-radius: 50%;
+        z-index: 5;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+</style>
+
+<div class="mb-4">
+    <a href="@Url.Action("Index", "Report")" class="text-decoration-none fw-medium small text-muted">
+        <i class="fa-solid fa-arrow-left me-1"></i> Quay lại danh sách
+    </a>
+</div>
+
+<div class="status-banner shadow-sm @(Model.Status == "HoanThanh" ? "bg-success text-white" : (Model.Status == "TuChoi" ? "bg-danger text-white" : "bg-white border"))">
+    <div>
+        <div class="@(isEditable ? "text-muted" : "text-white-50") small fw-bold">MÃ PHẢN ÁNH</div>
+        <h4 class="fw-bold m-0">#@Model.TrackingCode</h4>
+    </div>
+    <div class="text-end">
+        <div class="@(isEditable ? "text-muted" : "text-white-50") small fw-bold text-uppercase">TRẠNG THÁI HIỆN TẠI</div>
+        <span class="badge @(isEditable ? "bg-warning text-warning bg-opacity-10 border border-warning" : "bg-white text-dark") rounded-pill px-3 py-2 fw-bold">
+            @switch (Model.Status)
+            {
+                case "DangXuLy":
+                    <text><i class="fa-solid fa-person-digging me-1"></i> ĐANG THỰC ĐỊA</text>
+                    ;
+                    break;
+                case "HoanThanh":
+                    <text><i class="fa-solid fa-circle-check me-1"></i> ĐÃ HOÀN THÀNH</text>
+                    ;
+                    break;
+                case "TuChoi":
+                    <text><i class="fa-solid fa-circle-xmark me-1"></i> ĐÃ TỪ CHỐI</text>
+                    ;
+                    break;
+                default:
+                    @Model.Status
+                    ;
+                    break;
+            }
+        </span>
+    </div>
+</div>
+
+<div class="content-box p-4 shadow-sm">
+    <h6 class="fw-bold mb-3 text-dark">
+        <i class="fa-solid fa-camera text-muted me-2"></i>ẢNH MINH CHỨNG HIỆN TRƯỜNG
+    </h6>
+
+    @* ✅ FORM UPLOAD ĐÃ ĐƯỢC ĐƯA LÊN TRÊN *@
+    @if (isEditable)
+    {
+        <form action="@Url.Action("UploadAttachment", "Report")" method="post" enctype="multipart/form-data" class="mb-4">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="reportId" value="@Model.Id" />
+            <div class="input-group input-group-sm">
+                <input type="file" name="file" class="form-control bg-light" accept="image/*" required />
+                <button type="submit" class="btn btn-secondary fw-bold px-3">
+                    <i class="fa-solid fa-cloud-arrow-up me-1"></i> TẢI ẢNH
+                </button>
+            </div>
+        </form>
+    }
+
+    <div class="row g-2 mb-4">
+        @if (attachments.Any())
+        {
+            @foreach (var img in attachments)
+            {
+                string imageBase64 = "";
+                if (img.FileData != null)
+                {
+                    imageBase64 = $"data:{img.ContentType};base64,{Convert.ToBase64String(img.FileData)}";
+                }
+
+                <div class="col-4 position-relative">
+                    @* Hiển thị ảnh từ chuỗi Base64 *@
+                    <img src="@imageBase64" class="img-grid-item shadow-sm"
+                         onclick="viewImageModal('@imageBase64')" alt="Minh chứng từ DB" />
+
+                    @* Nút xóa (Nếu ở bên Handler) *@
+                    @if (isEditable) { /* Nút xóa cũ */ }
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="p-4 bg-light rounded-3 text-center border border-dashed text-muted small">
+                    <i class="fa-solid fa-images d-block fs-2 mb-2 opacity-25"></i>
+                    Chưa có hình ảnh minh chứng.
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="content-box p-4 p-xl-5 shadow-sm">
+            <h5 class="fw-bold mb-4 text-dark border-bottom pb-3">Thông tin hiện trường</h5>
+
+            <div class="mb-4">
+                <div class="info-label">Tiêu đề</div>
+                <div class="fw-bold fs-5 text-dark">@Model.Title</div>
+            </div>
+
+            <div class="mb-4">
+                <div class="info-label">Nội dung mô tả từ người dân</div>
+                <div class="p-3 bg-light rounded-3 border text-dark shadow-sm">@Model.Description</div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-7">
+                    <div class="info-label">Địa chỉ</div>
+                    <div class="text-dark fw-medium"><i class="fa-solid fa-location-dot text-danger me-1"></i> @Model.AddressText</div>
+                </div>
+                <div class="col-md-5 text-md-end">
+                    <div class="info-label">Thời gian gửi</div>
+                    <div class="text-dark small"><i class="fa-solid fa-clock text-primary me-1"></i> @Model.CreatedAtUtc.AddHours(7).ToString("dd/MM/yyyy HH:mm")</div>
+                </div>
+            </div>
+
+            @if (Model.Latitude != 0 && Model.Longitude != 0)
+            {
+                <div class="mt-4 pt-3 border-top">
+                    <a href="https://www.google.com/maps/search/?api=1&query=@Model.Latitude,@Model.Longitude"
+                       target="_blank" class="btn btn-sm btn-outline-primary rounded-3 px-3 fw-bold">
+                        <i class="fa-solid fa-map-location-dot me-2"></i> MỞ BẢN ĐỒ CHỈ ĐƯỜNG
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+
+        <div class="content-box p-4 mb-4 shadow-sm border-top border-4 @(isEditable ? "border-primary" : "border-success")">
+            <h6 class="fw-bold mb-4 @(isEditable ? "text-primary" : "text-success")">
+                <i class="fa-solid fa-clipboard-check me-2"></i>BÁO CÁO KẾT QUẢ XỬ LÝ
+            </h6>
+
+            @if (isEditable)
+            {
+                <form action="@Url.Action("SubmitResult", "Report")" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="reportId" value="@Model.Id" />
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-dark">Phân loại kết quả <span class="text-danger">*</span></label>
+                        <select name="resultStatus" class="form-select rounded-3 py-2 border-primary border-opacity-25" required>
+                            <option value="HoanThanh">Xử lý thành công (Hoàn thành)</option>
+                            <option value="TuChoi">Không thể xử lý (Từ chối)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-dark">Chi tiết công việc đã thực hiện <span class="text-danger">*</span></label>
+                        <textarea name="resolutionNote" class="form-control rounded-3" rows="5" required
+                              placeholder="Ghi rõ các biện pháp đã khắc phục tại hiện trường..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-sm" style="border-radius: 12px;">
+                        XÁC NHẬN GỬI KẾT QUẢ
+                    </button>
+                </form>
+            }
+            else
+            {
+                <div class="p-3 bg-light rounded-3 border border-dashed mb-2">
+                    <div class="info-label">Nội dung báo cáo kết quả:</div>
+                    <div class="text-dark fw-bold italic">"@Model.ResolutionNote"</div>
+                </div>
+                <div class="alert alert-info border-0 small m-0 mt-3">
+                    <i class="fa-solid fa-lock me-2"></i>Nhiệm vụ này đã được chốt kết quả và không thể chỉnh sửa thêm.
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="imageLightbox" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-transparent border-0">
+            <div class="modal-header border-0 p-0 mb-2 justify-content-end">
+                <button type="button" class="btn btn-light rounded-circle" data-bs-dismiss="modal">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body p-0 text-center">
+                <img id="modalImg" src="" class="img-fluid rounded-4 shadow-lg" style="max-height: 85vh; border: 5px solid white;" />
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function viewImageModal(src) {
+        document.getElementById('modalImg').src = src;
+        var myModal = new bootstrap.Modal(document.getElementById('imageLightbox'));
+        myModal.show();
+    }
+</script>

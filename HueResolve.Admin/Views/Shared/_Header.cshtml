@@ -1,0 +1,80 @@
+﻿<div class="header-wrapper">
+    <div class="d-flex align-items-center">
+        <h4 class="m-0 fw-bold" style="color: var(--sidebar-bg); letter-spacing: 0.5px; font-size: 1.1rem;">
+            HUE RESOLVE <span class="text-muted fw-light">| IOC</span>
+        </h4>
+
+        <div class="ms-4 ps-4 border-start border-2 d-none d-xl-flex align-items-center" style="height: 30px;">
+            <span class="text-uppercase fw-bold m-0" style="font-size: 0.75rem; color: var(--text-muted); letter-spacing: 1px;">
+                VÌ MỘT CỐ ĐÔ <span style="color: var(--accent-success)">XANH</span> - SẠCH - SÁNG
+            </span>
+        </div>
+    </div>
+
+    <div class="d-flex align-items-center">
+        <!-- Ô tìm kiếm -->
+        <div class="position-relative d-none d-md-block me-4">
+            <i class="fa-solid fa-magnifying-glass position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" style="font-size: 0.8rem;"></i>
+            <input type="text" class="form-control rounded-pill ps-5"
+                   style="background: #f1f5f9; border: 1px solid #e2e8f0; width: 200px; font-size: 0.8rem;"
+                   placeholder="Mã phản ánh..." />
+        </div>
+
+        <!-- Chuông thông báo -->
+        <button class="btn border-0 text-muted me-3 p-2">
+            <i class="fa-regular fa-bell fs-5"></i>
+        </button>
+
+        <!-- Avatar dropdown -->
+        <div class="dropdown">
+            <!-- Nút hình tròn hiển thị chữ cái đầu tên người dùng -->
+            <button class="btn p-0 border-0 rounded-circle d-flex align-items-center justify-content-center"
+                    style="width: 38px; height: 38px; background: var(--accent-blue); color: #fff; font-weight: 700; font-size: 0.95rem; cursor: pointer;"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                    title="Tài khoản">
+                @{
+                    /* Lấy chữ cái đầu của FullName để hiển thị trên avatar */
+                    string fullName = User.Identity?.Name ?? "?";
+                    string initial = fullName.Length > 0 ? fullName[0].ToString().ToUpper() : "?";
+                }
+                @initial
+            </button>
+
+            <!-- Dropdown menu -->
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2"
+                style="min-width: 200px; border-radius: 12px; overflow: hidden;">
+
+                <!-- Thông tin người dùng -->
+                <li class="px-3 py-2 border-bottom">
+                    <div class="fw-bold text-dark" style="font-size: 0.85rem;">@fullName</div>
+                    <div class="text-muted" style="font-size: 0.75rem;">
+                        @{
+                            string role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";
+                            string roleLabel = role switch
+                            {
+                                "Admin" => "Quản trị viên",
+                                "Officer" => "Cán bộ HueIOC",
+                                _ => role
+                            };
+                        }
+                        @roleLabel
+                    </div>
+                </li>
+
+                <!-- Nút đăng xuất -->
+                <li>
+                    <form action="/Account/Logout" method="post" class="m-0">
+                        @Html.AntiForgeryToken()
+                        <button type="submit"
+                                class="dropdown-item d-flex align-items-center gap-2 text-danger py-2">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                            Đăng xuất
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>

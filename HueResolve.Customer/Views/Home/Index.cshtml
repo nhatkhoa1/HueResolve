@@ -1,8 +1,194 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model IEnumerable<HueResolve.Models.Model.Report>
+@{
+    ViewData["Title"] = "Cổng thông tin phản ánh hiện trường";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="py-4 text-center" style="background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);">
+    <div class="container">
+        <h2 class="fw-bold text-white mb-2">Thành phố Huế Thông minh</h2>
+        <p class="text-white-50 mb-4 small">Chung tay xây dựng đô thị xanh - sạch - đẹp</p>
+
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <form action="@Url.Action("Track", "Home")" method="get">
+                    <div class="input-group shadow-sm bg-white p-1" style="border-radius: 50px;">
+                        <span class="input-group-text bg-transparent border-0 text-muted ps-3">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </span>
+                        <input type="text" name="code" class="form-control border-0 shadow-none" placeholder="Nhập mã tra cứu (HUE-...)" required style="font-size: 0.9rem;">
+                        <button class="btn btn-primary fw-bold" type="submit" style="border-radius: 40px; font-size: 0.85rem; padding: 8px 20px;">
+                            TRA CỨU
+                        </button>
+                    </div>
+                </form>
+                @if (TempData["SearchError"] != null)
+                {
+                    <div class="mt-2 text-warning fw-bold small">@TempData["SearchError"]</div>
+                }
+            </div>
+        </div>
+    </div>
 </div>
+
+<div class="container mt-4 mb-5">
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                <div class="card-header bg-white py-3 border-0 d-flex align-items-center justify-content-between">
+                    <h6 class="fw-bold m-0 text-dark"><i class="fa-solid fa-map-location-dot text-danger me-2"></i>Bản đồ sự cố trực tuyến</h6>
+                    <span class="badge bg-light text-muted border small"><i class="fa-solid fa-circle text-success me-1" style="font-size:8px;"></i>Trực tiếp</span>
+                </div>
+                <div id="heatmap" style="height: 550px; background: #eee;"></div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white py-3 border-0">
+                    <h6 class="fw-bold m-0 text-dark"><i class="fa-solid fa-bolt text-warning me-2"></i>Phản ánh mới nhất</h6>
+                </div>
+                <div class="card-body p-0" style="max-height: 550px; overflow-y: auto;">
+                    <div class="list-group list-group-flush">
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                <a href="@Url.Action("Track", "Home", new { code = item.TrackingCode })" class="list-group-item list-group-item-action p-3 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="fw-bold text-primary small">#@item.TrackingCode</span>
+                                        <span class="text-muted" style="font-size: 0.7rem;">@item.CreatedAtUtc.AddHours(7).ToString("dd/MM HH:mm")</span>
+                                    </div>
+                                    <h6 class="fw-bold text-dark text-truncate mb-2" style="font-size: 0.9rem;">@item.Title</h6>
+
+                                    @if (item.Status == "DangXuLy")
+                                    {
+                                        <span class="badge bg-warning text-dark rounded-pill" style="font-size: 0.7rem;">Đang xử lý</span>
+                                    }
+                                    else if (item.Status == "HoanThanh")
+                                    {
+                                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill" style="font-size: 0.7rem;">Đã xử lý</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-info bg-opacity-10 text-info rounded-pill" style="font-size: 0.7rem;">Mới tiếp nhận</span>
+                                    }
+                                </a>
+                            }
+                        }
+                        else
+                        {
+                            <div class="p-4 text-center text-muted small">
+                                <i>Chưa có phản ánh nào gần đây.</i>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+
+    <style>
+        .leaflet-popup-content-wrapper {
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .leaflet-popup-content {
+            margin: 14px;
+        }
+
+        .leaflet-container {
+            font-family: inherit;
+            z-index: 1;
+        }
+
+        .pulse-marker {
+            animation: pulse 1.5s infinite;
+        }
+
+        @@keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(245, 158, 11, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+            }
+        }
+    </style>
+
+    <script>
+        var map = L.map('heatmap').setView([16.4637, 107.5908], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        fetch('@Url.Action("GetPublicMapData", "Home")')
+            .then(response => response.json())
+            .then(data => {
+                var heatPoints = [];
+                var markersLayer = L.layerGroup();
+
+                data.forEach(report => {
+                    heatPoints.push([report.latitude, report.longitude, 1]);
+
+                    var markerColor = "#3b82f6";
+                    var statusName = "Mới tiếp nhận";
+                    var extraClass = "";
+
+                    if (report.status === "DangXuLy") {
+                        markerColor = "#f59e0b";
+                        statusName = "Đang xử lý thực địa";
+                        extraClass = "pulse-marker";
+                    } else if (report.status === "HoanThanh") {
+                        markerColor = "#10b981";
+                        statusName = "Đã xử lý xong";
+                    }
+
+                    var circle = L.circleMarker([report.latitude, report.longitude], {
+                        radius: 8, fillColor: markerColor, color: "#fff", weight: 2, opacity: 1, fillOpacity: 0.9, className: extraClass
+                    });
+
+                    let popupContent = `
+                        <div class="text-dark" style="min-width: 220px;">
+                            <div class="small text-muted fw-bold mb-1">#${report.trackingCode}</div>
+                            <h6 class="fw-bold mb-2">${report.title}</h6>
+                            <div class="small mb-2"><i class="fa-solid fa-location-dot text-danger me-1"></i>${report.addressText}</div>
+                            <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+                                <span class="badge" style="background-color:${markerColor}">${statusName}</span>
+                                <a href="/Home/Track?code=${report.trackingCode}" class="btn btn-sm btn-outline-primary" style="font-size:0.75rem; font-weight:bold;">Xem chi tiết</a>
+                            </div>
+                        </div>`;
+                    circle.bindPopup(popupContent);
+                    markersLayer.addLayer(circle);
+                });
+
+                var heatLayer = L.heatLayer(heatPoints, { radius: 25, blur: 15, maxZoom: 15, gradient: { 0.2: 'blue', 0.4: 'cyan', 0.6: 'lime', 0.8: 'yellow', 1.0: 'red' } });
+
+                if (map.getZoom() < 14) { heatLayer.addTo(map); } else { markersLayer.addTo(map); }
+
+                map.on('zoomend', function () {
+                    let currentZoom = map.getZoom();
+                    if (currentZoom < 14) {
+                        if (map.hasLayer(markersLayer)) map.removeLayer(markersLayer);
+                        if (!map.hasLayer(heatLayer)) map.addLayer(heatLayer);
+                    } else {
+                        if (map.hasLayer(heatLayer)) map.removeLayer(heatLayer);
+                        if (!map.hasLayer(markersLayer)) map.addLayer(markersLayer);
+                    }
+                });
+            })
+            .catch(error => console.error('Lỗi tải dữ liệu bản đồ:', error));
+    </script>
+}

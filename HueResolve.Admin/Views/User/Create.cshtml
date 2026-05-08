@@ -1,0 +1,100 @@
+﻿@model HueResolve.Models.Model.User
+@{
+    ViewData["Title"] = "Thêm mới Tài khoản";
+    var departments = ViewBag.Departments as IEnumerable<HueResolve.Models.Model.Department>
+                      ?? Enumerable.Empty<HueResolve.Models.Model.Department>();
+}
+
+<div class="mb-4">
+    <a href="@Url.Action("Index")" class="text-decoration-none text-muted fw-medium small">
+        <i class="fa-solid fa-arrow-left me-1"></i> Quay lại danh sách
+    </a>
+    <h4 class="fw-bold mt-2" style="color: var(--text-main);">Thêm Tài khoản mới</h4>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="card-body p-4 p-xl-5">
+        <form action="@Url.Action("Create")" method="post">
+            @Html.AntiForgeryToken()
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small text-dark">Họ và tên <span class="text-danger">*</span></label>
+                    <input type="text" name="FullName" class="form-control rounded-3 py-2" required placeholder="VD: Nguyễn Văn A" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small text-dark">Tên đăng nhập <span class="text-danger">*</span></label>
+                    <input type="text" name="Username" class="form-control rounded-3 py-2" required placeholder="VD: nguyenvana" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small text-dark">Mật khẩu khởi tạo <span class="text-danger">*</span></label>
+                    <input type="password" name="rawPassword" class="form-control rounded-3 py-2" required placeholder="Nhập mật khẩu..." />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small text-dark">Số điện thoại</label>
+                    <input type="text" name="PhoneNumber" class="form-control rounded-3 py-2" placeholder="09xx..." />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small text-dark">Vai trò hệ thống <span class="text-danger">*</span></label>
+                    <select name="RoleId" id="selectRole" class="form-select rounded-3 py-2" required onchange="toggleDepartment()">
+                        <option value="1">Quản trị viên (Admin)</option>
+                        <option value="2">Cán bộ IOC (Officer)</option>
+                        <option value="4">Cán bộ xử lý (Handler)</option>
+                        <option value="3" selected>Công dân (Customer)</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6" id="departmentGroup">
+                    <label class="form-label fw-bold small text-dark">
+                        Gắn với Đơn vị xử lý
+                        <span id="deptRequired" class="text-danger d-none">*</span>
+                        <span id="deptOptional" class="text-muted fw-normal">(Nếu cần)</span>
+                    </label>
+                    <select name="DepartmentId" id="selectDept" class="form-select rounded-3 py-2">
+                        <option value="">-- Không gắn đơn vị nào --</option>
+                        @foreach (var d in departments)
+                        {
+                            <option value="@d.Id">@d.Name</option>
+                        }
+                    </select>
+                    <div id="deptHint" class="form-text text-warning d-none">
+                        <i class="fa-solid fa-triangle-exclamation me-1"></i>
+                        Vai trò Cán bộ xử lý nên được gắn với một đơn vị cụ thể.
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-5 d-flex justify-content-end">
+                <button type="submit" class="btn text-white px-5 py-2 fw-bold shadow-sm" style="background: var(--accent-success); border-radius: 10px;">
+                    LƯU TÀI KHOẢN
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleDepartment() {
+            const role     = document.getElementById('selectRole').value;
+            const hint     = document.getElementById('deptHint');
+            const required = document.getElementById('deptRequired');
+            const optional = document.getElementById('deptOptional');
+
+            if (role === '4') {
+                hint.classList.remove('d-none');
+                required.classList.remove('d-none');
+                optional.classList.add('d-none');
+            } else {
+                hint.classList.add('d-none');
+                required.classList.add('d-none');
+                optional.classList.remove('d-none');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', toggleDepartment);
+    </script>
+}

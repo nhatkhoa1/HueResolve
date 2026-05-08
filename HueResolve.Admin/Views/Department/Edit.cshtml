@@ -1,0 +1,52 @@
+﻿@model HueResolve.Models.Model.Department
+@{
+    ViewData["Title"] = "Sửa Đơn vị";
+}
+
+<div class="mb-4">
+    <a href="@Url.Action("Index")" class="text-decoration-none text-muted fw-medium small">
+        <i class="fa-solid fa-arrow-left me-1"></i> Quay lại danh sách
+    </a>
+    <h4 class="fw-bold mt-2" style="color: var(--text-main);">Cập nhật Đơn vị: @Model.Name</h4>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="card-body p-4 p-xl-5">
+        <form action="@Url.Action("Edit")" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="Id" value="@Model.Id" />
+            <div class="row g-4">
+                <div class="col-md-8">
+                    <label class="form-label fw-bold small text-dark">Tên đơn vị/cơ quan <span class="text-danger">*</span></label>
+                    <input type="text" name="Name" value="@Model.Name" class="form-control rounded-3" required />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-dark">Phân loại <span class="text-danger">*</span></label>
+                    <select name="Type" class="form-select rounded-3" required>
+                        <option value="Sở/Ban/Ngành" selected="@(Model.Type == "Sở/Ban/Ngành")">Sở/Ban/Ngành</option>
+                        <option value="Doanh nghiệp dịch vụ" selected="@(Model.Type == "Doanh nghiệp dịch vụ")">Doanh nghiệp dịch vụ</option>
+                        <option value="UBND Quận/Huyện" selected="@(Model.Type == "UBND Quận/Huyện")">UBND Quận/Huyện</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small text-dark">Email tiếp nhận thông báo <span class="text-danger">*</span></label>
+                    <input type="email" name="Email" value="@Model.Email" class="form-control rounded-3" required />
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-bold small text-dark">Mô tả chức năng nhiệm vụ</label>
+                    <textarea name="Description" class="form-control rounded-3" rows="4">@Model.Description</textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small text-dark">Số điện thoại Hotline <span class="text-danger">*</span></label>
+                    <input type="text" name="PhoneNumber" value="@(Model?.PhoneNumber)" class="form-control rounded-3 py-2" required placeholder="VD: 1900 xxxx" />
+                </div>
+            </div>
+
+            <div class="mt-5 d-flex justify-content-end">
+                <button type="submit" class="btn text-white px-5 py-2 fw-bold shadow-sm" style="background: var(--accent-blue); border-radius: 10px;">
+                    CẬP NHẬT
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
