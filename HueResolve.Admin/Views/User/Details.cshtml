@@ -1,0 +1,129 @@
+@model HueResolve.Models.Model.User
+@{
+    ViewData["Title"] = "Chi tiết Tài khoản";
+    var roleNames = new Dictionary<int, string>
+    {
+        { 1, "Quản trị viên (Admin)" },
+        { 2, "Cán bộ IOC (Officer)" },
+        { 3, "Công dân (Customer)" },
+        { 4, "Cán bộ xử lý (Handler)" }
+    };
+}
+
+<div class="mb-4">
+    <a href="@Url.Action("Index")" class="text-decoration-none text-muted fw-medium small">
+        <i class="fa-solid fa-arrow-left me-1"></i> Quay lại danh sách
+    </a>
+    <h4 class="fw-bold mt-2" style="color: var(--text-main);">Chi tiết Tài khoản</h4>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success border-0 shadow-sm rounded-3 mb-4 fw-medium">
+        <i class="fa-solid fa-circle-check me-2"></i>@TempData["Success"]
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4 fw-medium">
+        <i class="fa-solid fa-triangle-exclamation me-2"></i>@TempData["Error"]
+    </div>
+}
+
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header p-4 border-bottom" style="background: var(--accent-blue); color: white;">
+                <h5 class="m-0 fw-bold"><i class="fa-solid fa-user-circle me-2"></i>Thông Tin Cơ Bản</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="mb-3">
+                    <label class="form-label fw-bold small text-muted">Họ và Tên</label>
+                    <p class="text-dark">@Model.FullName</p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold small text-muted">Tên Đăng Nhập</label>
+                    <p class="text-dark">@Model.Username</p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold small text-muted">Vai Trò</label>
+                    <p class="text-dark">
+                        <span class="badge" style="background: var(--accent-blue);">
+                            @(roleNames.ContainsKey(Model.RoleId) ? roleNames[Model.RoleId] : "Không xác định")
+                        </span>
+                    </p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold small text-muted">Số Điện Thoại</label>
+                    <p class="text-dark">@(string.IsNullOrEmpty(Model.PhoneNumber) ? "Chưa cập nhật" : Model.PhoneNumber)</p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold small text-muted">Địa Chỉ</label>
+                    <p class="text-dark">@(string.IsNullOrEmpty(Model.AddressText) ? "Chưa cập nhật" : Model.AddressText)</p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold small text-muted">Ngày Tạo Tài Khoản</label>
+                    <p class="text-dark">@Model.CreatedAtUtc.ToString("dd/MM/yyyy HH:mm:ss")</p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold small text-muted">Trạng Thái</label>
+                    <p class="text-dark">
+                        @if (Model.IsActive)
+                        {
+                            <span class="badge bg-success">
+                                <i class="fa-solid fa-circle me-1"></i> Đang hoạt động
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">
+                                <i class="fa-solid fa-circle-slash me-1"></i> Bị khóa
+                            </span>
+                        }
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header p-4 border-bottom" style="background: var(--accent-success); color: white;">
+                <h5 class="m-0 fw-bold"><i class="fa-solid fa-lock me-2"></i>Quản Lý Bảo Mật</h5>
+            </div>
+            <div class="card-body p-4">
+                <a href="@Url.Action("ChangePassword", new { id = Model.Id })" class="btn btn-primary btn-sm rounded-3 w-100 mb-3 py-2">
+                    <i class="fa-solid fa-key me-2"></i>Đổi Mật Khẩu
+                </a>
+
+                <div class="mt-4 p-3 rounded-3" style="background: #f8f9fa; border-left: 4px solid var(--accent-blue);">
+                    <h6 class="fw-bold text-dark mb-3"><i class="fa-solid fa-shield me-2"></i>Quản Lý Trạng Thái</h6>
+                    @if (Model.IsActive)
+                    {
+                        <form action="@Url.Action("ToggleStatus", new { id = Model.Id, isActive = false })" method="post" style="display: inline;">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-danger btn-sm rounded-3 w-100 py-2">
+                                <i class="fa-solid fa-ban me-2"></i>Khóa Tài Khoản
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <form action="@Url.Action("ToggleStatus", new { id = Model.Id, isActive = true })" method="post" style="display: inline;">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-success btn-sm rounded-3 w-100 py-2">
+                                <i class="fa-solid fa-lock-open me-2"></i>Mở Khóa Tài Khoản
+                            </button>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

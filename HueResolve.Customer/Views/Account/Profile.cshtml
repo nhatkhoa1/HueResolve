@@ -1,0 +1,128 @@
+@model HueResolve.Models.Model.User
+@{
+    ViewData["Title"] = "Thông Tin Cá Nhân";
+}
+
+<div class="container py-4">
+    <div class="mb-4">
+        <h4 class="fw-bold" style="color: var(--text-main);">
+            <i class="fa-solid fa-user-circle me-2"></i>Thông Tin Cá Nhân
+        </h4>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success border-0 shadow-sm rounded-3 mb-4 fw-medium">
+            <i class="fa-solid fa-circle-check me-2"></i>@TempData["Success"]
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-header p-4 border-bottom" style="background: var(--accent-blue); color: white;">
+                    <h5 class="m-0 fw-bold"><i class="fa-solid fa-id-card me-2"></i>Thông Tin Chi Tiết</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">Họ và Tên</label>
+                            <p class="text-dark fs-6">@Model.FullName</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">Tên Đăng Nhập</label>
+                            <p class="text-dark fs-6">@Model.Username</p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">Số Điện Thoại</label>
+                            <p class="text-dark fs-6">
+                                @if (string.IsNullOrEmpty(Model.PhoneNumber))
+                                {
+                                    <span class="text-muted">Chưa cập nhật</span>
+                                }
+                                else
+                                {
+                                    @Model.PhoneNumber
+                                }
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">Ngày Tạo Tài Khoản</label>
+                            <p class="text-dark fs-6">@Model.CreatedAtUtc.ToString("dd/MM/yyyy HH:mm:ss")</p>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold small text-muted">Địa Chỉ</label>
+                        <p class="text-dark fs-6">
+                            @if (string.IsNullOrEmpty(Model.AddressText))
+                            {
+                                <span class="text-muted">Chưa cập nhật</span>
+                            }
+                            else
+                            {
+                                @Model.AddressText
+                            }
+                        </p>
+                    </div>
+
+                    <hr />
+
+                    <div class="d-grid gap-2 d-sm-flex">
+                        <a href="@Url.Action("EditProfile")" class="btn btn-primary rounded-3 fw-medium">
+                            <i class="fa-solid fa-pen-to-square me-2"></i>Chỉnh Sửa Thông Tin
+                        </a>
+                        <a href="@Url.Action("ChangePassword")" class="btn btn-warning rounded-3 fw-medium text-dark">
+                            <i class="fa-solid fa-key me-2"></i>Đổi Mật Khẩu
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header p-4 border-bottom" style="background: var(--accent-success); color: white;">
+                    <h5 class="m-0 fw-bold"><i class="fa-solid fa-file-lines me-2"></i>Báo Cáo Của Tôi</h5>
+                </div>
+                <div class="card-body p-4">
+                    <p class="text-muted text-center py-4">
+                        <i class="fa-solid fa-inbox me-2"></i>Chuyển tới <a href="@Url.Action("MyReports", "Report")">Báo Cáo Của Tôi</a> để xem danh sách
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header p-4 border-bottom" style="background: #6c757d; color: white;">
+                    <h5 class="m-0 fw-bold"><i class="fa-solid fa-bell me-2"></i>Thông Báo</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="text-center py-4 text-muted">
+                        <i class="fa-solid fa-inbox" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
+                        <p class="small">Bạn chưa có thông báo nào.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4 mt-3">
+                <div class="card-header p-4 border-bottom" style="background: var(--accent-blue); color: white;">
+                    <h5 class="m-0 fw-bold"><i class="fa-solid fa-lightbulb me-2"></i>Mẹo Hữu Ích</h5>
+                </div>
+                <div class="card-body p-4 small">
+                    <div class="mb-3">
+                        <h6 class="fw-bold mb-2"><i class="fa-solid fa-check text-success me-2"></i>Tạo Báo Cáo Tốt</h6>
+                        <p class="text-muted small">Mô tả chi tiết vị trí, tình trạng sự cố để đội xử lý nhanh chóng giải quyết.</p>
+                    </div>
+                    <hr />
+                    <div>
+                        <h6 class="fw-bold mb-2"><i class="fa-solid fa-shield text-warning me-2"></i>Bảo Mật Tài Khoản</h6>
+                        <p class="text-muted small">Cập nhật thông tin cá nhân và thay đổi mật khẩu định kỳ để bảo vệ tài khoản.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

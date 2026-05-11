@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using HueResolve.Business.Services;
 using HueResolve.Models.Model;
@@ -129,6 +130,119 @@ namespace HueResolve.Customer.Controllers
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Index", "Home");
+        }
+
+        /// <summary>
+        /// Xem thông tin cá nhân của người dùng hiện tại.
+        /// </summary>
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> Profile()
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(userIdStr, out Guid userId))
+                return RedirectToAction("Login");
+
+            var user = await UserService.GetUserByIdAsync(userId);
+            if (user == null)
+                return NotFound();
+
+            return View(user);
+        }
+
+        /// <summary>
+        /// Mở giao diện form chỉnh sửa thông tin cá nhân.
+        /// </summary>
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> EditProfile()
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(userIdStr, out Guid userId))
+                return RedirectToAction("Login");
+
+            var user = await UserService.GetUserByIdAsync(userId);
+            if (user == null)
+                return NotFound();
+
+            return View(user);
+        }
+
+        /// <summary>
+        /// Xử lý cập nhật thông tin cá nhân.
+        /// </summary>
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditProfile(string fullName, string? phoneNumber, string? addressText)
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(userIdStr, out Guid userId))
+                return RedirectToAction("Login");
+
+            if (string.IsNullOrWhiteSpace(fullName))
+            {
+                ViewBag.Error = "Họ tên không được để trống.";
+                var user = await UserService.GetUserByIdAsync(userId);
+                return View(user);
+            }
+
+            bool success = await UserService.UpdateUserInfoAsync(userId, fullName, phoneNumber, addressText);
+            if (success)
+            {
+                TempData["Success"] = "Cập nhật thông tin thành công.";
+                return RedirectToAction("Profile");
+            }
+
+            ViewBag.Error = "Cập nhật thất bại. Vui lòng thử lại.";
+            var currentUser = await UserService.GetUserByIdAsync(userId);
+            return View(currentUser);
+        }
+
+        /// <summary>
+        /// Mở giao diện form đổi mật khẩu.
+        /// </summary>
+        [Authorize]
+        [HttpGet]
+        public IActionResult ChangePassword()
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(userIdStr, out Guid userId))
+                return RedirectToAction("Login");
+
+            ViewBag.UserId = userId;
+            return View();
+        }
+
+        /// <summary>
+        /// Xử lý yêu cầu đổi mật khẩu.
+        /// </summary>
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(string currentPassword, string newPassword, string confirmPassword)
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(userIdStr, out Guid userId))
+                return RedirectToAction("Login");
+
+            ViewBag.UserId = userId;
+
+            if (newPassword != confirmPassword)
+            {
+                ViewBag.Error = "Mật khẩu mới và xác nhận mật khẩu không khớp.";
+                return View();
+            }
+
+            bool success = await UserService.ChangePasswordAsync(userId, currentPassword, newPassword);
+            if (success)
+            {
+                TempData["Success"] = "Đổi mật khẩu thành công.";
+                return RedirectToAction("Profile");
+            }
+
+            ViewBag.Error = "Mật khẩu hiện tại không chính xác hoặc không thể cập nhật.";
+            return View();
         }
 
         /// <summary>

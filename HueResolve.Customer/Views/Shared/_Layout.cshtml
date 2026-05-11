@@ -86,6 +86,7 @@
                                 @User.Identity.Name
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" style="border-radius: 12px;">
+                                <li><a class="dropdown-item py-2" href="@Url.Action("Profile", "Account")"><i class="fa-solid fa-user me-2 text-muted"></i>Thông tin cá nhân</a></li>
                                 <li><a class="dropdown-item py-2" href="@Url.Action("MyReports", "Report")"><i class="fa-solid fa-clock-rotate-left me-2 text-muted"></i>Lịch sử của tôi</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item py-2 text-danger" href="@Url.Action("Logout", "Account")"><i class="fa-solid fa-arrow-right-from-bracket me-2"></i>Đăng xuất</a></li>

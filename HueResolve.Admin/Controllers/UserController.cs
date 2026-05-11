@@ -73,6 +73,70 @@ namespace HueResolve.Admin.Controllers
         }
 
         /// <summary>
+        /// Xem chi tiết thông tin tài khoản người dùng.
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> Details(Guid id)
+        {
+            var user = await UserService.GetUserByIdAsync(id);
+            if (user == null)
+            {
+                TempData["Error"] = "Không tìm thấy tài khoản.";
+                return RedirectToAction("Index");
+            }
+
+            return View(user);
+        }
+
+        /// <summary>
+        /// Mở giao diện form đổi mật khẩu.
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> ChangePassword(Guid id)
+        {
+            var user = await UserService.GetUserByIdAsync(id);
+            if (user == null)
+            {
+                TempData["Error"] = "Không tìm thấy tài khoản.";
+                return RedirectToAction("Index");
+            }
+
+            ViewBag.UserId = id;
+            ViewBag.Username = user.Username;
+            return View();
+        }
+
+        /// <summary>
+        /// Xử lý yêu cầu đổi mật khẩu.
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(Guid id, string currentPassword, string newPassword, string confirmPassword)
+        {
+            if (newPassword != confirmPassword)
+            {
+                ModelState.AddModelError("", "Mật khẩu mới và xác nhận mật khẩu không khớp.");
+                ViewBag.UserId = id;
+                var user = await UserService.GetUserByIdAsync(id);
+                ViewBag.Username = user?.Username;
+                return View();
+            }
+
+            bool success = await UserService.ChangePasswordAsync(id, currentPassword, newPassword);
+            if (success)
+            {
+                TempData["Success"] = "Đổi mật khẩu thành công.";
+                return RedirectToAction("Details", new { id });
+            }
+
+            ModelState.AddModelError("", "Mật khẩu hiện tại không chính xác hoặc không thể cập nhật.");
+            ViewBag.UserId = id;
+            var targetUser = await UserService.GetUserByIdAsync(id);
+            ViewBag.Username = targetUser?.Username;
+            return View();
+        }
+
+        /// <summary>
         /// Xử lý yêu cầu thay đổi trạng thái hoạt động của tài khoản (Khóa/Mở khóa).
         /// Tài khoản Admin (RoleId = 1) được bảo vệ, không thể bị khóa bởi bất kỳ ai.
         /// </summary>

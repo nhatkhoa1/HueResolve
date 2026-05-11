@@ -97,5 +97,40 @@ namespace HueResolve.Business.Services
             /// Tuyệt đối không gọi nhầm sang GetByIdAsync() để tránh lỗi thiếu tham số Guid ID.
             return await _userRepository.GetByUsernameAsync(username);
         }
+
+        /// <summary>
+        /// Đổi mật khẩu cho tài khoản.
+        /// </summary>
+        public static async Task<bool> ChangePasswordAsync(Guid userId, string currentRawPassword, string newRawPassword)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+                return false;
+
+            // Xác thực mật khẩu hiện tại
+            if (user.PasswordHash != HashMD5(currentRawPassword))
+                return false;
+
+            // Cập nhật mật khẩu mới
+            string newPasswordHash = HashMD5(newRawPassword);
+            int result = await _userRepository.UpdatePasswordAsync(userId, newPasswordHash);
+            return result > 0;
+        }
+
+        /// <summary>
+        /// Cập nhật thông tin cá nhân người dùng.
+        /// </summary>
+        public static async Task<bool> UpdateUserInfoAsync(Guid userId, string fullName, string? phoneNumber, string? addressText)
+        {
+            var user = new User
+            {
+                Id = userId,
+                FullName = fullName,
+                PhoneNumber = phoneNumber,
+                AddressText = addressText
+            };
+            int result = await _userRepository.UpdateAsync(user);
+            return result > 0;
+        }
     }
 }

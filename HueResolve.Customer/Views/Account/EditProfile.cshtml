@@ -1,0 +1,78 @@
+@model HueResolve.Models.Model.User
+@{
+    ViewData["Title"] = "Chỉnh Sửa Thông Tin";
+}
+
+<div class="container py-4">
+    <div class="mb-4">
+        <a href="@Url.Action("Profile")" class="text-decoration-none text-muted fw-medium small">
+            <i class="fa-solid fa-arrow-left me-1"></i> Quay lại
+        </a>
+        <h4 class="fw-bold mt-2" style="color: var(--text-main);">
+            <i class="fa-solid fa-pen-to-square me-2"></i>Chỉnh Sửa Thông Tin Cá Nhân
+        </h4>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4 p-xl-5">
+                    @if (!string.IsNullOrEmpty(ViewBag.Error))
+                    {
+                        <div class="alert alert-danger border-0 rounded-3 mb-4">
+                            <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                            @ViewBag.Error
+                        </div>
+                    }
+
+                    <form action="@Url.Action("EditProfile")" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-dark">Họ và Tên <span class="text-danger">*</span></label>
+                            <input type="text" name="fullName" value="@Model.FullName" class="form-control rounded-3 py-2" required placeholder="Nhập họ và tên..." />
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-dark">Tên Đăng Nhập</label>
+                            <input type="text" value="@Model.Username" class="form-control rounded-3 py-2" disabled placeholder="Tên đăng nhập không thể thay đổi" />
+                            <small class="text-muted d-block mt-1">Tên đăng nhập không thể thay đổi</small>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-dark">Số Điện Thoại</label>
+                            <input type="tel" name="phoneNumber" value="@Model.PhoneNumber" class="form-control rounded-3 py-2" placeholder="09xx xxxx xxx" />
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-dark">Địa Chỉ</label>
+                            <textarea name="addressText" class="form-control rounded-3 py-2" rows="3" placeholder="Nhập địa chỉ của bạn...">@Model.AddressText</textarea>
+                        </div>
+
+                        <div class="d-grid gap-2 d-sm-flex">
+                            <button type="submit" class="btn btn-primary rounded-3 fw-medium py-2">
+                                <i class="fa-solid fa-check me-2"></i>Lưu Thay Đổi
+                            </button>
+                            <a href="@Url.Action("Profile")" class="btn btn-light rounded-3 fw-medium py-2 border">
+                                <i class="fa-solid fa-times me-2"></i>Hủy
+                            </a>
+                        </div>
+                    </form>
+
+                    <hr class="my-4" />
+
+                    <div class="p-3 rounded-3" style="background: #f0f7ff; border-left: 4px solid var(--accent-blue);">
+                        <h6 class="fw-bold text-dark mb-2">
+                            <i class="fa-solid fa-info-circle me-2"></i>Lưu Ý Khi Cập Nhật Thông Tin
+                        </h6>
+                        <ul class="mb-0 small text-dark ps-3">
+                            <li>Cập nhật số điện thoại để nhận thông báo về báo cáo của bạn</li>
+                            <li>Địa chỉ chi tiết giúp đội xử lý định vị chính xác sự cố</li>
+                            <li>Tất cả thông tin được bảo mật và không chia sẻ với bên thứ ba</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

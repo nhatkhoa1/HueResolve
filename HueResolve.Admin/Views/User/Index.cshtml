@@ -130,18 +130,32 @@
                             }
                         </td>
                         <td class="text-end pe-4">
-                            @if (user.RoleId == 1)
-                            {
-                                <span class="text-muted small fw-medium"><i class="fa-solid fa-shield-halved me-1"></i>Bảo vệ</span>
-                            }
-                            else
-                            {
-                                <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold"
-                                        style="color: @(user.IsActive ? "#ef4444" : "#10b981"); font-size: 0.85rem;"
-                                        onclick="openToggleModal('@user.Id', '@(user.IsActive ? "false" : "true")', '@user.FullName')">
-                                    @(user.IsActive ? "Khóa tài khoản" : "Mở khóa")
-                                </button>
-                            }
+                            <div class="btn-group btn-group-sm" role="group" style="gap: 4px;">
+                                <a href="@Url.Action("Details", new { id = user.Id })" 
+                                   class="btn btn-outline-primary rounded-3 py-1 px-2 fw-medium" 
+                                   title="Xem chi tiết">
+                                    <i class="fa-solid fa-eye me-1"></i>Chi tiết
+                                </a>
+                                <a href="@Url.Action("ChangePassword", new { id = user.Id })" 
+                                   class="btn btn-outline-warning rounded-3 py-1 px-2 fw-medium" 
+                                   title="Đổi mật khẩu">
+                                    <i class="fa-solid fa-key me-1"></i>Mật khẩu
+                                </a>
+                                @if (user.RoleId != 1)
+                                {
+                                    <button type="button" 
+                                            class="btn btn-outline-danger rounded-3 py-1 px-2 fw-medium"
+                                            style="color: @(user.IsActive ? "#ef4444" : "#10b981"); border-color: @(user.IsActive ? "#ef4444" : "#10b981");"
+                                            onclick="openToggleModal('@user.Id', '@(user.IsActive ? "false" : "true")', '@user.FullName')"
+                                            title="@(user.IsActive ? "Khóa tài khoản" : "Mở khóa tài khoản")">
+                                        <i class="fa-solid @(user.IsActive ? "fa-ban" : "fa-lock-open") me-1"></i>@(user.IsActive ? "Khóa" : "Mở")
+                                    </button>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small fw-medium"><i class="fa-solid fa-shield-halved me-1"></i>Bảo vệ</span>
+                                }
+                            </div>
                         </td>
                     </tr>
                 }

@@ -24,5 +24,11 @@ namespace HueResolve.Data.Interfaces
 
         /// <summary>Cập nhật trạng thái khóa/mở khóa tài khoản.</summary>
         Task<int> UpdateIsActiveAsync(Guid userId, bool isActive);
+
+        /// <summary>Cập nhật mật khẩu tài khoản.</summary>
+        Task<int> UpdatePasswordAsync(Guid userId, string newPasswordHash);
+
+        /// <summary>Cập nhật thông tin cá nhân (Tên, SĐT, Địa chỉ).</summary>
+        Task<int> UpdateAsync(User user);
     }
 }

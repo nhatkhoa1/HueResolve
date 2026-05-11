@@ -104,5 +104,28 @@ namespace HueResolve.Data.SQLServer
             string sql = @"UPDATE [dbo].[Users] SET [IsActive] = @IsActive WHERE [Id] = @UserId;";
             return await connection.ExecuteAsync(sql, new { UserId = userId, IsActive = isActive });
         }
+
+        /// <summary>
+        /// Cập nhật mật khẩu tài khoản (MD5 hash).
+        /// </summary>
+        public async Task<int> UpdatePasswordAsync(Guid userId, string newPasswordHash)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            string sql = @"UPDATE [dbo].[Users] SET [PasswordHash] = @PasswordHash WHERE [Id] = @UserId;";
+            return await connection.ExecuteAsync(sql, new { UserId = userId, PasswordHash = newPasswordHash });
+        }
+
+        /// <summary>
+        /// Cập nhật thông tin cá nhân của người dùng (FullName, PhoneNumber, AddressText).
+        /// </summary>
+        public async Task<int> UpdateAsync(User user)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            string sql = @"
+                UPDATE [dbo].[Users]
+                SET [FullName] = @FullName, [PhoneNumber] = @PhoneNumber, [AddressText] = @AddressText
+                WHERE [Id] = @Id;";
+            return await connection.ExecuteAsync(sql, user);
+        }
     }
 }
