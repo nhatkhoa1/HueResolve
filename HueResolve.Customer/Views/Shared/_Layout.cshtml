@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
@@ -78,6 +78,48 @@
                             <i class="fa-solid fa-plus me-1"></i> Gửi phản ánh
                         </a>
 
+                        <!-- ═══ CHUÔNG THÔNG BÁO ═══ -->
+                        <div class="dropdown" id="notifDropdown">
+                            <button class="btn btn-light rounded-circle position-relative shadow-sm border-0"
+                                    id="notifBell"
+                                    style="width:40px;height:40px;padding:0;"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false"
+                                    onclick="loadNotifications()">
+                                <i class="fa-solid fa-bell" style="color:#475569;font-size:1rem;"></i>
+                                <span id="notifBadge"
+                                      class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                                      style="font-size:.6rem;display:none;min-width:18px;">0</span>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end shadow border-0 p-0"
+                                 id="notifPanel"
+                                 style="width:340px;border-radius:16px;overflow:hidden;">
+                                <!-- Header -->
+                                <div class="px-4 py-3 border-bottom d-flex justify-content-between align-items-center"
+                                     style="background:#f8fafc;">
+                                    <span class="fw-bold" style="font-size:.9rem;color:#1e293b;">
+                                        <i class="fa-solid fa-bell me-2 text-primary"></i>Thông báo
+                                    </span>
+                                    <span id="notifCount" class="badge bg-primary rounded-pill" style="font-size:.7rem;">0</span>
+                                </div>
+                                <!-- Danh sách thông báo -->
+                                <div id="notifList" style="max-height:360px;overflow-y:auto;">
+                                    <div class="text-center py-5 text-muted" id="notifEmpty">
+                                        <i class="fa-regular fa-bell-slash fa-2x mb-2 d-block opacity-40"></i>
+                                        <small>Chưa có thông báo nào</small>
+                                    </div>
+                                </div>
+                                <!-- Footer -->
+                                <div class="border-top text-center py-2" style="background:#f8fafc;">
+                                    <a href="@Url.Action("MyReports", "Report")" class="text-decoration-none"
+                                       style="font-size:.8rem;color:#2563eb;font-weight:600;">
+                                        Xem tất cả phản ánh <i class="fa-solid fa-arrow-right ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- ═══ END CHUÔNG ═══ -->
+
                         <div class="dropdown">
                             <a class="nav-link dropdown-toggle text-dark fw-bold d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown">
                                 <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
@@ -146,6 +188,83 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Tự động đóng các thông báo (Alert) sau 5 giây
+        document.addEventListener("DOMContentLoaded", function() {
+            setTimeout(function() {
+                const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(function(alert) {
+                    const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+                    if (bsAlert) bsAlert.close();
+                });
+            }, 5000);
+        });
+    </script>
+    <script>
+        async function loadNotifications() {
+            const list = document.getElementById('notifList');
+            const empty = document.getElementById('notifEmpty');
+            const badge = document.getElementById('notifBadge');
+            const count = document.getElementById('notifCount');
+
+            try {
+                const response = await fetch('/Account/Notifications');
+                const data = await response.json();
+
+                if (data.items && data.items.length > 0) {
+                    empty.style.display = 'none';
+                    list.innerHTML = data.items.map(item => {
+                        let colorClass = "bg-primary";
+                        if (item.status === 'HoanThanh') colorClass = "bg-success";
+                        if (item.status === 'TuChoi') colorClass = "bg-danger";
+                        if (item.status === 'DangXuLy') colorClass = "bg-warning";
+                        if (item.status === 'ChoDuyetKq') colorClass = "bg-info";
+
+                        return `
+                            <a href="/Home/Track?code=${item.trackingCode}" class="dropdown-item px-4 py-3 border-bottom d-flex align-items-start gap-3" style="white-space: normal;">
+                                <div class="rounded-circle ${colorClass} bg-opacity-10 d-flex align-items-center justify-content-center flex-shrink-0" style="width:48px;height:48px;">
+                                    <i class="fa-solid ${item.icon} text-${colorClass.replace('bg-', '')}" style="font-size: 1.1rem;"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-1">
+                                        <span class="fw-bold text-dark" style="font-size:.85rem;">${item.title}</span>
+                                        <small class="text-muted" style="font-size:.7rem;">${item.timeAgo}</small>
+                                    </div>
+                                    <p class="mb-1 text-muted" style="font-size:.8rem; line-height: 1.4;">${item.note || 'Cập nhật trạng thái mới cho phản ánh của bạn'}</p>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge bg-light text-primary border" style="font-size:.65rem;">#${item.trackingCode}</span>
+                                        <small class="text-primary fw-bold" style="font-size: .65rem;">Xem chi tiết <i class="fa-solid fa-chevron-right" style="font-size: .5rem;"></i></small>
+                                    </div>
+                                </div>
+                            </a>
+                        `;
+                    }).join('');
+                    
+                    count.innerText = data.count;
+                    if (data.count > 0) {
+                        badge.innerText = data.count;
+                        badge.style.display = 'block';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                } else {
+                    empty.style.display = 'block';
+                    list.innerHTML = '';
+                    badge.style.display = 'none';
+                    count.innerText = '0';
+                }
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+            }
+        }
+
+        // Tự động tải thông báo khi trang load
+        if (document.getElementById('notifBell')) {
+            loadNotifications();
+            // Cập nhật mỗi 60 giây
+            setInterval(loadNotifications, 60000);
+        }
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

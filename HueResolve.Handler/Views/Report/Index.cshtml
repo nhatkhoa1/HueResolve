@@ -3,7 +3,7 @@
     ViewData["Title"] = "Danh sách nhiệm vụ";
     int currentPage = ViewBag.CurrentPage ?? 1;
     int totalPages = ViewBag.TotalPages ?? 1;
-    string currentStatus = ViewBag.CurrentStatus ?? "DangXuLy";
+    string currentStatus = ViewBag.CurrentStatus ?? "TiepNhan";
 }
 
 <style>
@@ -63,10 +63,12 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="fw-bold m-0" style="color: var(--text-main);">Quản lý Nhiệm vụ được giao</h4>
     <div class="d-flex gap-2">
+        <a href="@Url.Action("Index", "Report", new { status = "TiepNhan" })"
+           class="status-tab @(currentStatus == "TiepNhan" ? "active" : "")">Nhiệm vụ mới</a>
         <a href="@Url.Action("Index", "Report", new { status = "DangXuLy" })"
            class="status-tab @(currentStatus == "DangXuLy" ? "active" : "")">Đang thực hiện</a>
         <a href="@Url.Action("Index", "Report", new { status = "ChoDuyetKq" })"
-           class="status-tab @(currentStatus == "ChoDuyetKq" ? "active" : "")">Chờ kết quả duyệt</a>
+           class="status-tab @(currentStatus == "ChoDuyetKq" ? "active" : "")">Chờ kết quả</a>
         <a href="@Url.Action("Index", "Report", new { status = "HoanThanh" })"
            class="status-tab @(currentStatus == "HoanThanh" ? "active" : "")">Đã hoàn thành</a>
         <a href="@Url.Action("Index", "Report", new { status = "TuChoi" })"

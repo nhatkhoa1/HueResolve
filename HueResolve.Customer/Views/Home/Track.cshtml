@@ -58,7 +58,7 @@
                     <div class="row g-3">
                         @foreach (var img in citizenAttachments)
                         {
-                            var base64 = Convert.ToBase64String(img.FileData);
+                            var base64 = img.FileData != null ? Convert.ToBase64String(img.FileData) : "";
                             var imgSrc = $"data:{img.ContentType};base64,{base64}";
                             <div class="col-6 col-md-3">
                                 <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100" style="cursor: pointer;" onclick="openImageModal('@imgSrc')">
@@ -96,7 +96,7 @@
                             <div class="row g-3">
                                 @foreach (var img in resultAttachments)
                                 {
-                                    var base64 = Convert.ToBase64String(img.FileData);
+                                    var base64 = img.FileData != null ? Convert.ToBase64String(img.FileData) : "";
                                     var imgSrc = $"data:{img.ContentType};base64,{base64}";
                                     <div class="col-6 col-md-4 col-lg-3">
                                         <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100" style="cursor: pointer;" onclick="openImageModal('@imgSrc')">
@@ -124,7 +124,7 @@
                 <div class="p-5 text-center bg-light rounded-4 border border-dashed">
                     <div class="mb-3">
                         <span class="badge bg-info bg-opacity-10 text-info px-3 py-2 rounded-pill fw-bold">
-                            <i class="fa-solid fa- hourglass-half me-2"></i> Đang chờ phê duyệt
+                            <i class="fa-solid fa-hourglass-half me-2"></i> Chờ kết quả
                         </span>
                     </div>
                     <i class="fa-solid fa-clipboard-check fs-1 text-info mb-3 opacity-50"></i>

@@ -299,6 +299,46 @@ namespace HueResolve.Business.Services
             return await _reportRepository.GetByCustomerIdAsync(customerId);
         }
 
+        /// <summary>
+        /// Lấy danh sách thông báo cho công dân dựa trên lịch sử trạng thái phản ánh.
+        /// Chỉ lấy các bước do hệ thống/Admin thực hiện (TiepNhan, DangXuLy, HoanThanh, TuChoi).
+        /// </summary>
+        public static async Task<IEnumerable<CustomerNotification>> GetNotificationsForCustomerAsync(Guid customerId)
+        {
+            var myReports = await _reportRepository.GetByCustomerIdAsync(customerId);
+            var notifications = new List<CustomerNotification>();
+
+            foreach (var report in myReports)
+            {
+                var histories = await _historyRepository.GetByReportIdAsync(report.Id);
+                foreach (var h in histories)
+                {
+                    var (title, icon) = h.Status switch
+                    {
+                        "TiepNhan"   => ("Phản ánh đã được tiếp nhận", "fa-inbox"),
+                        "DangXuLy"   => ("Đã được phân công xử lý", "fa-person-digging"),
+                        "HoanThanh"  => ("Phản ánh đã được xử lý xong", "fa-circle-check"),
+                        "TuChoi"     => ("Phản ánh bị từ chối", "fa-circle-xmark"),
+                        "ChoDuyetKq" => ("Đơn vị đã gửi kết quả, chờ kết quả", "fa-clock"),
+                        _            => ("Cập nhật trạng thái", "fa-bell")
+                    };
+
+                    notifications.Add(new CustomerNotification
+                    {
+                        ReportId      = report.Id,
+                        TrackingCode  = report.TrackingCode,
+                        Title         = title,
+                        Icon          = icon,
+                        Note          = h.Note,
+                        Status        = h.Status,
+                        CreatedAtUtc  = h.CreatedAtUtc
+                    });
+                }
+            }
+
+            return notifications.OrderByDescending(n => n.CreatedAtUtc);
+        }
+
     }
 
     /// <summary>
@@ -318,5 +358,19 @@ namespace HueResolve.Business.Services
         public int HaTang { get; set; }
         public int AnNinh { get; set; }
         public int Khac { get; set; }
+    }
+
+    /// <summary>
+    /// DTO đại diện một thông báo hiển thị trên chuông của Customer.
+    /// </summary>
+    public class CustomerNotification
+    {
+        public Guid   ReportId     { get; set; }
+        public string TrackingCode { get; set; } = string.Empty;
+        public string Title        { get; set; } = string.Empty;
+        public string Icon         { get; set; } = "fa-bell";
+        public string? Note        { get; set; }
+        public string Status       { get; set; } = string.Empty;
+        public DateTime CreatedAtUtc { get; set; }
     }
 }

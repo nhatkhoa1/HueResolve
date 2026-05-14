@@ -10,7 +10,7 @@
         new { RoleId = (int?)null, Name = "Tất cả"      },
         new { RoleId = (int?)1,    Name = "Quản trị viên"        },
         new { RoleId = (int?)2,    Name = "Cán bộ IOC"   },
-        new { RoleId = (int?)4,    Name = "Đơn vị xử lý" },
+        new { RoleId = (int?)4,    Name = "Tài khoản Đơn vị" },
         new { RoleId = (int?)3,    Name = "Người dân"     }
     };
 }
@@ -92,9 +92,11 @@
                             <div class="text-muted small">@@@user.Username</div>
                             @if (user.DepartmentId.HasValue && user.RoleId == 4)
                             {
+                                var departments = ViewBag.Departments as IEnumerable<HueResolve.Models.Model.Department>;
+                                var deptName = departments?.FirstOrDefault(d => d.Id == user.DepartmentId)?.Name ?? $"Mã đơn vị #{user.DepartmentId}";
                                 <div class="text-muted small">
                                     <i class="fa-solid fa-building me-1" style="font-size: 0.7rem;"></i>
-                                    Đơn vị #@user.DepartmentId
+                                    @deptName
                                 </div>
                             }
                         </td>

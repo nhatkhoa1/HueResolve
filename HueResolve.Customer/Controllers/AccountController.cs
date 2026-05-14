@@ -252,6 +252,46 @@ namespace HueResolve.Customer.Controllers
         }
 
         /// <summary>
+        /// Lấy danh sách thông báo của user hiện tại (dùng cho AJAX chuông).
+        /// Trả về tối đa 10 thông báo mới nhất theo lịch sử trạng thái phản ánh.
+        /// </summary>
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> Notifications()
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(userIdStr, out Guid userId))
+                return Json(new { count = 0, items = Array.Empty<object>() });
+
+            var notifications = await ReportService.GetNotificationsForCustomerAsync(userId);
+            var top10 = notifications.Take(10).Select(n => new
+            {
+                reportId     = n.ReportId,
+                trackingCode = n.TrackingCode,
+                title        = n.Title,
+                icon         = n.Icon,
+                note         = n.Note,
+                status       = n.Status,
+                timeAgo      = FormatTimeAgo(n.CreatedAtUtc)
+            });
+
+            return Json(new { count = notifications.Count(), items = top10 });
+        }
+
+        /// <summary>
+        /// Helper: định dạng thời gian theo kiểu "X phút trước", "X giờ trước"...
+        /// </summary>
+        private static string FormatTimeAgo(DateTime utc)
+        {
+            var diff = DateTime.UtcNow - utc;
+            if (diff.TotalMinutes < 1)   return "Vừa xong";
+            if (diff.TotalMinutes < 60)  return $"{(int)diff.TotalMinutes} phút trước";
+            if (diff.TotalHours   < 24)  return $"{(int)diff.TotalHours} giờ trước";
+            if (diff.TotalDays    < 7)   return $"{(int)diff.TotalDays} ngày trước";
+            return utc.AddHours(7).ToString("dd/MM/yyyy");
+        }
+
+        /// <summary>
         /// Hàm Helper mã hóa chuỗi thành MD5 (Viết gọn giống Admin)
         /// </summary>
         private string GetMd5Hash(string input)

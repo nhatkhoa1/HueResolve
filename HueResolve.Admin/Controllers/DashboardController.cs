@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using HueResolve.Business.Services;
 
@@ -22,8 +22,13 @@ namespace HueResolve.Admin.Controllers
             var recentReports = await ReportService.GetRecentReportsAsync(10);
             ViewBag.Total = stats.TotalReports;
             ViewBag.DangXuLy = stats.Processing;
-            ViewBag.HoanThanh = stats.Completed;
-            ViewBag.TuChoi = stats.Rejected;
+            ViewBag.PhanAnhMoi = stats.Pending;       // TiepNhan — chưa phân công
+            ViewBag.ChoDuyetKq = stats.PendingApproval; // ChoDuyetKq — Đơn vị đã gửi KQ
+            
+            // Lấy ID của phản ánh chờ duyệt mới nhất (nếu có) để hỗ trợ link trực tiếp
+            var allReports = await ReportService.GetAllReportsAsync("ChoDuyetKq");
+            ViewBag.LatestPendingApprovalId = allReports.FirstOrDefault()?.Id;
+
             ViewBag.ChartGiaoThong = stats.GiaoThong;
             ViewBag.ChartMoiTruong = stats.MoiTruong;
             ViewBag.ChartHaTang = stats.HaTang;

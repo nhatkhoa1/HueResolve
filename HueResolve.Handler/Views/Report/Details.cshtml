@@ -71,11 +71,19 @@
     </div>
     <div class="text-end">
         <div class="@(isEditable ? "text-muted" : "text-white-50") small fw-bold text-uppercase">TRẠNG THÁI HIỆN TẠI</div>
-        <span class="badge @(isEditable ? "bg-warning text-warning bg-opacity-10 border border-warning" : "bg-white text-dark") rounded-pill px-3 py-2 fw-bold">
+        <span class="badge @(Model.Status == "TiepNhan" ? "bg-primary text-primary bg-opacity-10 border border-primary" : (isEditable ? "bg-warning text-warning bg-opacity-10 border border-warning" : "bg-white text-dark")) rounded-pill px-3 py-2 fw-bold">
             @switch (Model.Status)
             {
+                case "TiepNhan":
+                    <text><i class="fa-solid fa-bell me-1"></i> NHIỆM VỤ MỚI</text>
+                    ;
+                    break;
                 case "DangXuLy":
                     <text><i class="fa-solid fa-person-digging me-1"></i> ĐANG THỰC ĐỊA</text>
+                    ;
+                    break;
+                case "ChoDuyetKq":
+                    <text><i class="fa-solid fa-hourglass-half me-1"></i> CHỜ KẾT QUẢ</text>
                     ;
                     break;
                 case "HoanThanh":
@@ -222,6 +230,23 @@
                 <i class="fa-solid fa-clipboard-check me-2"></i>BÁO CÁO KẾT QUẢ XỬ LÝ
             </h6>
 
+            @if (Model.Status == "TiepNhan")
+            {
+                <div class="text-center py-4 px-3 bg-primary bg-opacity-10 rounded-4 border border-primary border-dashed mb-4">
+                    <i class="fa-solid fa-envelope-open-text fs-1 text-primary mb-3"></i>
+                    <h5 class="fw-bold text-primary">Nhiệm vụ mới được giao</h5>
+                    <p class="text-muted small mb-4">Vui lòng xác nhận để bắt đầu quá trình xử lý thực địa.</p>
+                    <form action="@Url.Action("UpdateStatus", "Report")" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="reportId" value="@Model.Id" />
+                        <input type="hidden" name="newStatus" value="DangXuLy" />
+                        <button type="submit" class="btn btn-primary w-100 py-3 fw-bold rounded-3 shadow-sm">
+                            <i class="fa-solid fa-play me-2"></i> BẮT ĐẦU XỬ LÝ NGAY
+                        </button>
+                    </form>
+                </div>
+            }
+
             @if (isEditable)
             {
                 <form action="@Url.Action("SubmitResult", "Report")" method="post" id="submitResultForm">
@@ -244,7 +269,7 @@
                     </div>
                 </form>
             }
-            @if (!isEditable)
+            @if (!isEditable && Model.Status != "TiepNhan")
             {
                 <div class="p-3 bg-light rounded-3 border border-dashed mb-2">
                     <div class="info-label">Nội dung báo cáo kết quả:</div>
@@ -309,8 +334,15 @@
 {
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            var successModal = new bootstrap.Modal(document.getElementById('successModal'));
-            successModal.show();
+            var modalEl = document.getElementById('successModal');
+            if (modalEl) {
+                var successModal = new bootstrap.Modal(modalEl);
+                successModal.show();
+                // Tự động đóng sau 5 giây
+                setTimeout(function() {
+                    successModal.hide();
+                }, 5000);
+            }
         });
     </script>
 }

@@ -21,7 +21,7 @@
         new { Status = (string?)null, Name = "Tất cả", Count = countAll, Class = "text-secondary" },
         new { Status = (string?)"TiepNhan", Name = "Mới tiếp nhận", Count = countTiepNhan, Class = "text-primary" },
         new { Status = (string?)"DangXuLy", Name = "Đang xử lý", Count = countDangXuLy, Class = "text-warning" },
-        new { Status = (string?)"ChoDuyetKq", Name = "Chờ kết quả duyệt", Count = countChoDuyetKq, Class = "text-info" },
+        new { Status = (string?)"ChoDuyetKq", Name = "Chờ kết quả", Count = countChoDuyetKq, Class = "text-info" },
         new { Status = (string?)"HoanThanh", Name = "Đã hoàn thành", Count = countHoanThanh, Class = "text-success" },
         new { Status = (string?)"TuChoi", Name = "Đã từ chối", Count = countTuChoi, Class = "text-danger" }
     };
@@ -137,8 +137,10 @@
                                                 <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill fw-bold border border-success border-opacity-25">Hoàn thành</span>
                                                 break;
                                             case "TuChoi":
-
                                                 <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill fw-bold border border-danger border-opacity-25">Đã từ chối</span>
+                                                break;
+                                            case "ChoDuyetKq":
+                                                <span class="badge bg-info bg-opacity-10 text-info px-3 py-2 rounded-pill fw-bold border border-info border-opacity-25">Chờ kết quả</span>
                                                 break;
                                             default:
 

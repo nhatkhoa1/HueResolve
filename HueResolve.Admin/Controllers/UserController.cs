@@ -31,6 +31,7 @@ namespace HueResolve.Admin.Controllers
             ViewBag.TotalCount = totalCount;
             ViewBag.CurrentRoleId = roleId;
             ViewBag.CurrentSearch = search;
+            ViewBag.Departments = await DepartmentService.GetActiveDepartmentsAsync();
 
             return View(users);
         }
