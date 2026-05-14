@@ -55,26 +55,29 @@
                 <form method="get" action="@Url.Action("Index")" class="row g-3">
                     <input type="hidden" name="status" value="@currentStatus" />
                     <div class="col-md-5">
-                        <div class="input-group shadow-sm rounded-3 overflow-hidden border">
-                            <span class="input-group-text bg-white border-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
-                            <input type="text" name="search" class="form-control border-0 ps-0 text-sm" placeholder="Tìm tiêu đề, mã phản ánh, tên người gửi..." value="@currentSearch">
+                        <div class="input-group-premium d-flex align-items-center">
+                            <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+                            <input type="text" name="search" class="form-control" placeholder="Tìm tiêu đề, mã phản ánh, tên người gửi..." value="@currentSearch">
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <select name="categoryId" class="form-select shadow-sm rounded-3 border fw-medium" onchange="this.form.submit()">
-                            <option value="">-- Tất cả lĩnh vực sự cố --</option>
-                            @if (ViewBag.Categories != null)
-                            {
-                                foreach (var cat in (IEnumerable<HueResolve.Models.Model.Category>)ViewBag.Categories)
+                        <div class="input-group-premium d-flex align-items-center">
+                            <span class="input-group-text"><i class="fa-solid fa-tag"></i></span>
+                            <select name="categoryId" class="form-select border-0 shadow-none bg-transparent fw-medium" onchange="this.form.submit()">
+                                <option value="">Tất cả lĩnh vực</option>
+                                @if (ViewBag.Categories != null)
                                 {
-                                    <option value="@cat.Id" selected="@(currentCategoryId == cat.Id)">@cat.Name</option>
+                                    foreach (var cat in (IEnumerable<HueResolve.Models.Model.Category>)ViewBag.Categories)
+                                    {
+                                        <option value="@cat.Id" selected="@(currentCategoryId == cat.Id)">@cat.Name</option>
+                                    }
                                 }
-                            }
-                        </select>
+                            </select>
+                        </div>
                     </div>
                     <div class="col-md-3">
-                        <button type="submit" class="btn btn-dark w-100 rounded-3 fw-bold shadow-sm py-2">
-                            <i class="fa-solid fa-filter me-2"></i>ÁP DỤNG LỌC
+                        <button type="submit" class="btn-premium-search w-100">
+                            <i class="fa-solid fa-filter"></i>ÁP DỤNG LỌC
                         </button>
                     </div>
                 </form>

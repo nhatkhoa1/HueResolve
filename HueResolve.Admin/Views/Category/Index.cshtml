@@ -1,4 +1,4 @@
-﻿@model IEnumerable<HueResolve.Models.Model.Category>
+@model IEnumerable<HueResolve.Models.Model.Category>
 @{
     ViewData["Title"] = "Quản lý Lĩnh vực sự cố";
 
@@ -15,8 +15,9 @@
             <h3 class="fw-bold text-dark m-0" style="letter-spacing: -0.5px;">Quản lý Lĩnh vực sự cố</h3>
             <p class="text-muted small m-0 mt-1">Hệ thống đang cấu hình tổng cộng <b class="text-primary">@totalCount</b> danh mục cho AI phân loại.</p>
         </div>
-        <a href="@Url.Action("Create")" class="btn text-white fw-bold shadow-sm rounded-3 py-2 px-3" style="background: var(--accent-success, #10b981);">
-            <i class="fa-solid fa-plus me-2"></i> Thêm Lĩnh vực
+        <a href="@Url.Action("Create")" class="btn-premium-add text-decoration-none">
+            <i class="fa-solid fa-circle-plus fs-5"></i>
+            <span>Thêm Lĩnh vực</span>
         </a>
     </div>
 
@@ -26,14 +27,14 @@
             <div class="p-4 border-bottom bg-white">
                 <form method="get" action="@Url.Action("Index")" class="row g-3">
                     <div class="col-md-9">
-                        <div class="input-group shadow-sm rounded-3 overflow-hidden border">
-                            <span class="input-group-text bg-white border-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
-                            <input type="text" name="search" value="@currentSearch" class="form-control border-0 ps-0 text-sm" placeholder="Tìm kiếm theo mã hoặc tên lĩnh vực...">
+                        <div class="input-group-premium d-flex align-items-center">
+                            <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+                            <input type="text" name="search" value="@currentSearch" class="form-control" placeholder="Tìm kiếm theo mã hoặc tên lĩnh vực...">
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <button type="submit" class="btn btn-dark w-100 rounded-3 fw-bold shadow-sm py-2">
-                            <i class="fa-solid fa-filter me-2"></i>TÌM KIẾM
+                        <button type="submit" class="btn-premium-search w-100">
+                            <i class="fa-solid fa-filter"></i>TÌM KIẾM
                         </button>
                     </div>
                 </form>

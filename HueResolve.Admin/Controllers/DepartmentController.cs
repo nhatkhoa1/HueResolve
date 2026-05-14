@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -33,6 +33,7 @@ namespace HueResolve.Admin.Controllers
 
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = (int)Math.Ceiling((double)totalCount / PageSize);
+            ViewBag.TotalCount = totalCount;
             ViewBag.CurrentSearch = search;
 
             return View(departments);
