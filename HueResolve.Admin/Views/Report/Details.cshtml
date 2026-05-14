@@ -1,8 +1,10 @@
-﻿@model HueResolve.Models.Model.Report
+@model HueResolve.Models.Model.Report
 @{
     ViewData["Title"] = "Chi tiết Phản ánh";
     var timeline = ViewBag.Timeline as IEnumerable<HueResolve.Models.Model.ReportStatusHistory> ?? Enumerable.Empty<HueResolve.Models.Model.ReportStatusHistory>();
     var attachments = ViewBag.Attachments as IEnumerable<HueResolve.Models.Model.ReportAttachment> ?? Enumerable.Empty<HueResolve.Models.Model.ReportAttachment>();
+    var citizenAttachments = attachments.Where(a => a.AttachmentType == "Citizen").ToList();
+    var resultAttachments = attachments.Where(a => a.AttachmentType == "Result").ToList();
     var departments = ViewBag.Departments as IEnumerable<HueResolve.Models.Model.Department> ?? Enumerable.Empty<HueResolve.Models.Model.Department>();
     var categories = ViewBag.Categories as IEnumerable<HueResolve.Models.Model.Category> ?? Enumerable.Empty<HueResolve.Models.Model.Category>();
     var assignment = ViewBag.LatestAssignment as HueResolve.Models.Model.Assignment;
@@ -13,6 +15,7 @@
     {
         "TiepNhan" => ("bg-primary bg-opacity-10 text-primary", "Tiếp nhận"),
         "DangXuLy" => ("bg-warning bg-opacity-10 text-warning", "Đang xử lý"),
+        "ChoDuyetKq" => ("bg-info bg-opacity-10 text-info", "Chờ kết quả duyệt"),
         "HoanThanh" => ("bg-success bg-opacity-10 text-success", "Hoàn thành"),
         "TuChoi" => ("bg-danger  bg-opacity-10 text-danger", "Từ chối"),
         _ => ("bg-secondary bg-opacity-10 text-secondary", Model.Status)
@@ -90,7 +93,7 @@
                     <i class="fa-solid fa-triangle-exclamation mt-1" style="color:#d97706;"></i>
                     <div>
                         <div class="fw-bold" style="color:#92400e;">AI phân loại không chắc chắn</div>
-                        <div style="color:#b45309;">Độ tin cậy @(Model.AiConfidence.HasValue? Model.AiConfidence.Value.ToString("P0") : "N/A") — Admin cần kiểm tra lại danh mục trước khi phân công.</div>
+                        <div style="color:#b45309;">Độ tin cậy @(Model.AiConfidence.HasValue? Model.AiConfidence.Value.ToString("P0") : "N/A") — Ban điều hành cần kiểm tra lại danh mục trước khi phân công.</div>
                     </div>
                 </div>
             }
@@ -110,18 +113,45 @@
             <div class="card-stat mb-3 border-0 shadow-sm rounded-4 p-4 bg-white">
                 <div class="fw-bold mb-3" style="font-size:0.9rem;color:var(--text-main);">
                     <i class="fa-solid fa-images me-2" style="color:var(--accent-blue);"></i>
-                    Minh chứng đính kèm <span class="ms-1 text-muted fw-normal" style="font-size:0.8rem;">(@attachments.Count() file)</span>
+                    Ảnh minh chứng từ người dân <span class="ms-1 text-muted fw-normal" style="font-size:0.8rem;">(@citizenAttachments.Count file)</span>
                 </div>
 
-                @if (attachments.Any())
+                @{ int attIdx = 0; }
+                @if (citizenAttachments.Any())
+                {
+                    <div class="d-flex flex-wrap gap-2 mb-4">
+                        @foreach (var att in citizenAttachments)
+                        {
+                            string base64Data = att.FileData != null ? $"data:{att.ContentType};base64,{Convert.ToBase64String(att.FileData)}" : "/img/no-image.png";
+
+                            <div class="gallery-thumb shadow-sm" onclick="openLightbox(@attIdx)"
+                                 style="width:110px;height:110px;border-radius:10px;border:1px solid var(--border-color); overflow:hidden;cursor:pointer;position:relative;background:#f1f5f9;flex-shrink:0;">
+                                <img src="@base64Data" alt="@att.OriginalFileName" style="width:100%;height:100%;object-fit:cover;" />
+                                <div class="thumb-overlay">
+                                    <i class="fa-solid fa-magnifying-glass-plus" style="color:#fff;font-size:1.2rem;"></i>
+                                </div>
+                            </div>
+                            attIdx++;
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="p-3 text-center bg-light rounded-3 text-muted mb-4" style="font-size: 0.85rem;">
+                        <i>Không có ảnh minh chứng từ người dân</i>
+                    </div>
+                }
+
+                <div class="fw-bold mb-3" style="font-size:0.9rem;color:var(--text-main);">
+                    <i class="fa-solid fa-camera-retro me-2" style="color:var(--accent-success);"></i>
+                    Ảnh kết quả xử lý <span class="ms-1 text-muted fw-normal" style="font-size:0.8rem;">(@resultAttachments.Count file)</span>
+                </div>
+
+                @if (resultAttachments.Any())
                 {
                     <div class="d-flex flex-wrap gap-2">
-                        @{
-                            int attIdx = 0;
-                        }
-                        @foreach (var att in attachments)
+                        @foreach (var att in resultAttachments)
                         {
-                            /// Hiển thị trực tiếp từ chuỗi Base64
                             string base64Data = att.FileData != null ? $"data:{att.ContentType};base64,{Convert.ToBase64String(att.FileData)}" : "/img/no-image.png";
 
                             <div class="gallery-thumb shadow-sm" onclick="openLightbox(@attIdx)"
@@ -138,7 +168,7 @@
                 else
                 {
                     <div class="p-3 text-center bg-light rounded-3 text-muted" style="font-size: 0.85rem;">
-                        <i>Không có dữ liệu đính kèm</i>
+                        <i>Chưa có ảnh kết quả xử lý</i>
                     </div>
                 }
             </div>
@@ -238,6 +268,34 @@
                 }
             </div>
 
+            @if (Model.Status == "ChoDuyetKq")
+            {
+                <div class="card-stat mb-3 border-0 shadow-sm rounded-4 p-4 bg-white border border-info border-2">
+                    <div class="fw-bold mb-3 border-bottom pb-2 text-info" style="font-size:0.9rem;">
+                        <i class="fa-solid fa-clipboard-user me-2"></i> Duyệt kết quả xử lý
+                    </div>
+                    <form action="@Url.Action("ApproveResult", "Report")" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <div class="mb-3">
+                            <label class="form-label" style="font-size:0.78rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;">Ghi chú duyệt/trả về <span class="text-danger">*</span></label>
+                            <textarea name="adminNote" rows="2" class="form-control shadow-sm" style="font-size:0.85rem;border-radius:8px;resize:none;" placeholder="Ghi nhận hoàn thành hoặc nêu rõ lý do yêu cầu làm lại..." required></textarea>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-success flex-fill shadow-sm" style="border-radius:8px;font-size:0.85rem;font-weight:600;padding:.6rem;" onclick="showApproveConfirm(true)">
+                                <i class="fa-solid fa-check me-1"></i> Duyệt (Gửi kết quả cho công dân)
+                            </button>
+                            <button type="button" class="btn btn-warning flex-fill shadow-sm text-dark" style="border-radius:8px;font-size:0.85rem;font-weight:600;padding:.6rem;" onclick="showApproveConfirm(false)">
+                                <i class="fa-solid fa-rotate-left me-1"></i> Gửi lại cho đơn vị xử lý
+                            </button>
+                        </div>
+                        
+                        <!-- Hidden inputs to store the decision for the form -->
+                        <input type="hidden" name="isApproved" id="hiddenIsApproved" value="true" />
+                    </form>
+                </div>
+            }
+
             <div class="card-stat mb-3 border-0 shadow-sm rounded-4 p-4 bg-white">
                 <div class="fw-bold mb-3 border-bottom pb-2" style="font-size:0.9rem;color:var(--text-main);">
                     <i class="fa-solid fa-comment-dots me-2" style="color:var(--accent-blue);"></i> Phản hồi cho người dân
@@ -267,11 +325,11 @@
                     <div class="fw-bold mb-3 border-bottom pb-2 text-danger" style="font-size:0.9rem;">
                         <i class="fa-solid fa-ban me-2"></i> Từ chối phản ánh
                     </div>
-                    <form action="@Url.Action("Reject", "Report")" method="post" onsubmit="return confirm('Xác nhận từ chối phản ánh này?');">
+                    <form action="@Url.Action("Reject", "Report")" method="post" id="rejectForm">
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="id" value="@Model.Id" />
                         <div class="mb-3">
-                            <select name="reason" class="form-select shadow-sm" required style="font-size:0.85rem;border-radius:8px;">
+                            <select name="reason" id="rejectReason" class="form-select shadow-sm" required style="font-size:0.85rem;border-radius:8px;">
                                 <option value="">-- Chọn lý do --</option>
                                 <option value="Thông tin không chính xác">Thông tin không chính xác</option>
                                 <option value="Nội dung spam/phá hoại">Nội dung spam/phá hoại</option>
@@ -279,7 +337,7 @@
                                 <option value="Khác">Lý do khác...</option>
                             </select>
                         </div>
-                        <button type="submit" class="btn btn-danger w-100 shadow-sm" style="border-radius:8px;font-size:0.85rem;font-weight:600;padding:.6rem;">
+                        <button type="button" class="btn btn-danger w-100 shadow-sm" style="border-radius:8px;font-size:0.85rem;font-weight:600;padding:.6rem;" onclick="showRejectConfirm()">
                             <i class="fa-solid fa-xmark me-1"></i> Xác nhận từ chối
                         </button>
                     </form>
@@ -388,5 +446,80 @@
             if (e.key === 'ArrowRight') shiftLightbox(1);
             if (e.key === 'Escape')     closeLightbox();
         });
+    </script>
+    
+    <!-- Modal Thông báo Thành công -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-body text-center p-5">
+                    <div class="mb-4">
+                        <i class="fa-solid fa-circle-check text-success" style="font-size: 4rem;"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3">Thành công!</h5>
+                    <p class="text-muted mb-4">@TempData["Success"]</p>
+                    <button type="button" class="btn btn-success w-100 rounded-3 fw-bold py-2" data-bs-dismiss="modal">ĐÓNG</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Xác nhận Duyệt/Trả về -->
+    <div class="modal fade" id="approveConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="fw-bold m-0">Xác nhận thao tác</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4">
+                    <p id="approveConfirmMessage" class="mb-0 text-muted"></p>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-3 px-4 fw-bold" data-bs-dismiss="modal">HỦY</button>
+                    <button type="button" id="btnConfirmApprove" class="btn rounded-3 px-4 fw-bold text-white">XÁC NHẬN</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showApproveConfirm(isApproved) {
+            const modal = new bootstrap.Modal(document.getElementById('approveConfirmModal'));
+            const msg = isApproved ? "Bạn xác nhận kết quả đã <b>ĐẠT YÊU CẦU</b> và muốn đóng phản ánh này để gửi kết quả cho công dân?" : "Bạn muốn <b>TRẢ LẠI</b> phản ánh này cho đơn vị để yêu cầu xử lý lại?";
+            const btn = document.getElementById('btnConfirmApprove');
+            
+            document.getElementById('approveConfirmMessage').innerHTML = msg;
+            document.getElementById('hiddenIsApproved').value = isApproved;
+            
+            btn.className = isApproved ? "btn btn-success rounded-3 px-4 fw-bold text-white" : "btn btn-warning rounded-3 px-4 fw-bold text-dark";
+            
+            btn.onclick = function() {
+                document.querySelector('form[action*="ApproveResult"]').submit();
+            };
+            
+            modal.show();
+        }
+
+        function showRejectConfirm() {
+            const reason = document.getElementById('rejectReason').value;
+            if (!reason) {
+                alert("Vui lòng chọn lý do từ chối trước.");
+                return;
+            }
+
+            const modal = new bootstrap.Modal(document.getElementById('approveConfirmModal'));
+            document.getElementById('approveConfirmMessage').innerHTML = `Bạn có chắc chắn muốn <b>TỪ CHỐI</b> phản ánh này với lý do: <i>${reason}</i>?`;
+            
+            const btn = document.getElementById('btnConfirmApprove');
+            btn.className = "btn btn-danger rounded-3 px-4 fw-bold text-white";
+            btn.innerText = "XÁC NHẬN TỪ CHỐI";
+            
+            btn.onclick = function() {
+                document.getElementById('rejectForm').submit();
+            };
+            
+            modal.show();
+        }
     </script>
 }

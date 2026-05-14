@@ -1,4 +1,4 @@
-﻿@model IEnumerable<HueResolve.Models.Model.User>
+@model IEnumerable<HueResolve.Models.Model.User>
 @{
     ViewData["Title"] = "Quản lý Tài khoản";
 
@@ -8,10 +8,10 @@
 
     var tabs = new[] {
         new { RoleId = (int?)null, Name = "Tất cả"      },
-        new { RoleId = (int?)1,    Name = "Admin"        },
+        new { RoleId = (int?)1,    Name = "Quản trị viên"        },
         new { RoleId = (int?)2,    Name = "Cán bộ IOC"   },
-        new { RoleId = (int?)4,    Name = "Cán bộ xử lý" },
-        new { RoleId = (int?)3,    Name = "Công dân"     }
+        new { RoleId = (int?)4,    Name = "Đơn vị xử lý" },
+        new { RoleId = (int?)3,    Name = "Người dân"     }
     };
 }
 
@@ -103,16 +103,16 @@
                             @switch (user.RoleId)
                             {
                                 case 1:
-                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-3">Admin</span>
+                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-3">Quản trị viên</span>
                                     break;
                                 case 2:
                                     <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-3">Cán bộ IOC</span>
                                     break;
                                 case 4:
-                                    <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-3">Cán bộ xử lý</span>
+                                    <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-3">Đơn vị xử lý</span>
                                     break;
                                 case 3:
-                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3">Công dân</span>
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3">Người dân</span>
                                     break;
                                 default:
                                     <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25 rounded-pill px-3">Khác</span>

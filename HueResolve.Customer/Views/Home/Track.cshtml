@@ -1,4 +1,4 @@
-﻿@model HueResolve.Models.Model.Report
+@model HueResolve.Models.Model.Report
 @{
     ViewData["Title"] = "Tra cứu phản ánh #" + Model.TrackingCode;
 
@@ -40,46 +40,103 @@
                 <div><i class="fa-solid fa-location-dot text-danger me-1"></i> <b>Địa chỉ:</b> @Model.AddressText</div>
             </div>
 
-            <div class="mb-5">
-                <h6 class="fw-bold text-uppercase text-muted mb-3">Nội dung phản ánh:</h6>
-                <div class="p-4 bg-light rounded-4 text-dark shadow-sm" style="line-height: 1.8;">
-                    @Model.Description
-                </div>
-            </div>
-
             @{
                 var attachments = ViewBag.Attachments as IEnumerable<HueResolve.Models.Model.ReportAttachment>;
+                var citizenAttachments = attachments?.Where(a => a.AttachmentType == "Citizen").ToList() ?? new List<HueResolve.Models.Model.ReportAttachment>();
+                var resultAttachments = attachments?.Where(a => a.AttachmentType == "Result").ToList() ?? new List<HueResolve.Models.Model.ReportAttachment>();
             }
-            @if (attachments != null && attachments.Any())
-            {
-                <div class="mb-5">
-                    <h6 class="fw-bold text-uppercase text-muted mb-3"><i class="fa-solid fa-images me-2"></i>Ảnh minh chứng hiện trường</h6>
+
+            <!-- KHU VỰC NỘI DUNG PHẢN ÁNH (BÊN GỬI) -->
+            <div class="mb-5">
+                <h6 class="fw-bold text-uppercase text-muted mb-3"><i class="fa-solid fa-file-pen me-2"></i>Nội dung phản ánh:</h6>
+                <div class="p-4 bg-light rounded-4 text-dark shadow-sm mb-4" style="line-height: 1.8;">
+                    @Model.Description
+                </div>
+
+                @if (citizenAttachments.Any())
+                {
                     <div class="row g-3">
-                        @foreach (var img in attachments)
+                        @foreach (var img in citizenAttachments)
                         {
                             var base64 = Convert.ToBase64String(img.FileData);
                             var imgSrc = $"data:{img.ContentType};base64,{base64}";
-
-                            <div class="col-6 col-md-4 col-lg-3">
-                                <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100"
-                                     style="cursor: pointer;"
-                                     onclick="openImageModal('@imgSrc')">
-                                    <img src="@imgSrc" alt="Ảnh minh chứng" class="img-fluid w-100" style="height: 150px; object-fit: cover; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" />
+                            <div class="col-6 col-md-3">
+                                <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100" style="cursor: pointer;" onclick="openImageModal('@imgSrc')">
+                                    <img src="@imgSrc" alt="Ảnh hiện trường" class="img-fluid w-100" style="height: 150px; object-fit: cover; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" />
                                 </div>
                             </div>
                         }
                     </div>
+                }
+            </div>
+
+            <!-- KHU VỰC KẾT QUẢ XỬ LÝ (BÊN NHẬN) -->
+            @if (Model.Status == "HoanThanh" || Model.Status == "TuChoi")
+            {
+                <div class="p-4 p-md-5 rounded-4 border-0 shadow-sm" style="background-color: #f8fafc; border: 1px solid #e2e8f0 !important;">
+                    <h5 class="fw-bold text-dark mb-4"><i class="fa-solid fa-square-check text-success me-2"></i>Kết quả xử lý từ cơ quan</h5>
+
+                    @if (!string.IsNullOrEmpty(Model.ResolutionNote))
+                    {
+                        <div class="mb-4">
+                            <div class="p-4 rounded-4 bg-white border-start border-success border-4 shadow-sm">
+                                <p class="mb-0 text-dark fw-medium" style="line-height: 1.8;">@Model.ResolutionNote</p>
+                                @if (Model.CompletedAtUtc.HasValue)
+                                {
+                                    <div class="text-muted small mt-3"><i class="fa-regular fa-clock me-1"></i> Hoàn tất lúc: @Model.CompletedAtUtc.Value.AddHours(7).ToString("HH:mm dd/MM/yyyy")</div>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    @if (resultAttachments.Any())
+                    {
+                        <div class="mb-4">
+                            <h6 class="fw-bold text-muted small text-uppercase mb-3">Hình ảnh kết quả thực địa:</h6>
+                            <div class="row g-3">
+                                @foreach (var img in resultAttachments)
+                                {
+                                    var base64 = Convert.ToBase64String(img.FileData);
+                                    var imgSrc = $"data:{img.ContentType};base64,{base64}";
+                                    <div class="col-6 col-md-4 col-lg-3">
+                                        <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100" style="cursor: pointer;" onclick="openImageModal('@imgSrc')">
+                                            <img src="@imgSrc" alt="Ảnh kết quả" class="img-fluid w-100" style="height: 180px; object-fit: cover; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" />
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.AdminFeedback))
+                    {
+                        <div class="mt-4 pt-4 border-top">
+                            <h6 class="fw-bold text-primary small text-uppercase mb-2">Phản hồi từ Ban điều hành:</h6>
+                            <div class="p-3 rounded-3 bg-white border border-primary border-opacity-10 text-dark italic">
+                                "@Model.AdminFeedback"
+                            </div>
+                        </div>
+                    }
                 </div>
             }
-
-            @if (Model.Status == "HoanThanh" && !string.IsNullOrEmpty(Model.ResolutionNote))
+            else if (Model.Status == "ChoDuyetKq")
             {
-                <div class="mb-2">
-                    <h6 class="fw-bold text-uppercase text-success mb-3"><i class="fa-solid fa-check-double me-2"></i>Kết quả xử lý từ cơ quan:</h6>
-                    <div class="p-4 rounded-4 border-start border-success border-4" style="background-color: #f0fdf4;">
-                        <p class="mb-0 text-dark" style="line-height: 1.8;">@Model.ResolutionNote</p>
-                        <div class="text-muted small mt-3">Cập nhật lúc: @Model.CompletedAtUtc?.AddHours(7).ToString("HH:mm dd/MM/yyyy")</div>
+                <div class="p-5 text-center bg-light rounded-4 border border-dashed">
+                    <div class="mb-3">
+                        <span class="badge bg-info bg-opacity-10 text-info px-3 py-2 rounded-pill fw-bold">
+                            <i class="fa-solid fa- hourglass-half me-2"></i> Đang chờ phê duyệt
+                        </span>
                     </div>
+                    <i class="fa-solid fa-clipboard-check fs-1 text-info mb-3 opacity-50"></i>
+                    <h5 class="fw-bold text-dark">Đã có kết quả xử lý</h5>
+                    <p class="text-muted mb-0">Cơ quan chức năng đã báo cáo kết quả. Đang chờ Ban điều hành phê duyệt để gửi tới bạn.</p>
+                </div>
+            }
+            else
+            {
+                <div class="p-5 text-center bg-light rounded-4 border border-dashed">
+                    <i class="fa-solid fa-spinner fa-spin fs-2 text-muted mb-3"></i>
+                    <p class="text-muted mb-0">Cơ quan chức năng đang trong quá trình xử lý. Vui lòng quay lại sau.</p>
                 </div>
             }
         </div>

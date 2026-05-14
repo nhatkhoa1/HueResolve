@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace HueResolve.Models.Model
 {
@@ -32,5 +32,8 @@ namespace HueResolve.Models.Model
         ///     
         /// </summary>
         public byte[]? FileData { get; set; }
+
+        /// <summary>Loại tệp đính kèm: "Citizen" (Công dân gửi) hoặc "Result" (Hiện trường gửi lại sau khi xử lý)</summary>
+        public string AttachmentType { get; set; } = "Citizen";
     }
 }

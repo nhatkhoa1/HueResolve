@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
@@ -31,10 +31,10 @@ namespace HueResolve.Data.SQLServer
             string sql = @"
                 INSERT INTO [dbo].[ReportAttachments] (
                     [Id], [ReportId], [OriginalFileName], [StoredFileName],
-                    [RelativePath], [ContentType], [CreatedAtUtc], [FileData]
+                    [RelativePath], [ContentType], [CreatedAtUtc], [FileData], [AttachmentType]
                 ) VALUES (
                     @Id, @ReportId, @OriginalFileName, @StoredFileName,
-                    @RelativePath, @ContentType, @CreatedAtUtc, @FileData
+                    @RelativePath, @ContentType, @CreatedAtUtc, @FileData, @AttachmentType
                 );";
             return await connection.ExecuteAsync(sql, attachment);
         }
@@ -72,7 +72,7 @@ namespace HueResolve.Data.SQLServer
             string sql = @"
                 SELECT 
                     [Id], [ReportId], [OriginalFileName], [StoredFileName], 
-                    [RelativePath], [ContentType], [CreatedAtUtc]
+                    [RelativePath], [ContentType], [CreatedAtUtc], [AttachmentType]
                 FROM [dbo].[ReportAttachments] 
                 WHERE [Id] = @Id;";
             return await connection.QuerySingleOrDefaultAsync<ReportAttachment>(sql, new { Id = id });

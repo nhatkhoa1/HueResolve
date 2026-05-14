@@ -1,4 +1,4 @@
-﻿@model HueResolve.Models.Model.User
+@model HueResolve.Models.Model.User
 @{
     ViewData["Title"] = "Thêm mới Tài khoản";
     var departments = ViewBag.Departments as IEnumerable<HueResolve.Models.Model.Department>
@@ -40,10 +40,10 @@
                 <div class="col-md-6">
                     <label class="form-label fw-bold small text-dark">Vai trò hệ thống <span class="text-danger">*</span></label>
                     <select name="RoleId" id="selectRole" class="form-select rounded-3 py-2" required onchange="toggleDepartment()">
-                        <option value="1">Quản trị viên (Admin)</option>
-                        <option value="2">Cán bộ IOC (Officer)</option>
-                        <option value="4">Cán bộ xử lý (Handler)</option>
-                        <option value="3" selected>Công dân (Customer)</option>
+                        <option value="1">Quản trị viên</option>
+                        <option value="2">Cán bộ IOC</option>
+                        <option value="4">Đơn vị xử lý</option>
+                        <option value="3" selected>Người dân</option>
                     </select>
                 </div>
 

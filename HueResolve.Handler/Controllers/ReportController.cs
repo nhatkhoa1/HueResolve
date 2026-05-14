@@ -1,4 +1,4 @@
-﻿using HueResolve.Business.Services;
+using HueResolve.Business.Services;
 using HueResolve.Models.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -64,6 +64,7 @@ namespace HueResolve.Handler.Controllers
             ViewBag.CountAll = baseList.Count;
             ViewBag.CountTiepNhan = baseList.Count(r => r.Status == "TiepNhan");
             ViewBag.CountDangXuLy = baseList.Count(r => r.Status == "DangXuLy");
+            ViewBag.CountChoDuyetKq = baseList.Count(r => r.Status == "ChoDuyetKq");
             ViewBag.CountHoanThanh = baseList.Count(r => r.Status == "HoanThanh");
             ViewBag.CountTuChoi = baseList.Count(r => r.Status == "TuChoi");
 
@@ -241,7 +242,8 @@ namespace HueResolve.Handler.Controllers
                     RelativePath = "DB_STORAGE", /// Không còn dùng đường dẫn vật lý
                     ContentType = file.ContentType,
                     CreatedAtUtc = DateTime.UtcNow,
-                    FileData = fileData /// Lưu dữ liệu nhị phân
+                    FileData = fileData, /// Lưu dữ liệu nhị phân
+                    AttachmentType = "Result"
                 };
 
                 bool saved = await ReportService.SaveAttachmentAsync(reportId, attachment);
@@ -267,15 +269,17 @@ namespace HueResolve.Handler.Controllers
             if (report == null || report.AssignedDepartmentId != GetMyDepartmentId())
                 return Unauthorized();
 
-            bool success = await ReportService.SubmitReportResultAsync(reportId, resultStatus, resolutionNote);
+            string finalNote = resultStatus == "HoanThanh" ? $"[Đề xuất Hoàn thành] {resolutionNote}" : $"[Đề xuất Từ chối] {resolutionNote}";
+
+            bool success = await ReportService.SubmitReportResultAsync(reportId, "ChoDuyetKq", finalNote);
 
             if (success)
             {
-                TempData["Success"] = "Đã gửi báo cáo kết quả xử lý thành công.";
+                TempData["Success"] = "Đã gửi yêu cầu duyệt kết quả thành công.";
                 return RedirectToAction(nameof(Index)); /* Trở lại danh sách nhiệm vụ của ReportController */
             }
 
-            TempData["Error"] = "Lỗi khi lưu kết quả. Vui lòng thử lại.";
+            TempData["Error"] = "Lỗi khi gửi yêu cầu. Vui lòng thử lại.";
             return RedirectToAction(nameof(Details), new { id = reportId });
         }
     }

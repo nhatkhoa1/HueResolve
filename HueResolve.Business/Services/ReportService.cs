@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -214,6 +214,7 @@ namespace HueResolve.Business.Services
                 TotalReports = reports.Count(),
                 Pending = reports.Count(r => r.Status == "TiepNhan"),
                 Processing = reports.Count(r => r.Status == "DangXuLy"),
+                PendingApproval = reports.Count(r => r.Status == "ChoDuyetKq"),
                 Completed = reports.Count(r => r.Status == "HoanThanh"),
                 Rejected = reports.Count(r => r.Status == "TuChoi"),
                 NeedsReview = reports.Count(r => r.NeedsReview),
@@ -308,6 +309,7 @@ namespace HueResolve.Business.Services
         public int TotalReports { get; set; }
         public int Pending { get; set; }
         public int Processing { get; set; }
+        public int PendingApproval { get; set; }
         public int Completed { get; set; }
         public int Rejected { get; set; }
         public int NeedsReview { get; set; }

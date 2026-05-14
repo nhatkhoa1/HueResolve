@@ -1,7 +1,9 @@
-﻿@model HueResolve.Models.Model.Report
+@model HueResolve.Models.Model.Report
 @{
     ViewData["Title"] = "Chi tiết nhiệm vụ xử lý";
     var attachments = ViewBag.Attachments as IEnumerable<HueResolve.Models.Model.ReportAttachment> ?? Enumerable.Empty<HueResolve.Models.Model.ReportAttachment>();
+    var citizenAttachments = attachments.Where(a => a.AttachmentType == "Citizen").ToList();
+    var resultAttachments = attachments.Where(a => a.AttachmentType == "Result").ToList();
 
     // Kiểm tra xem phản ánh còn trong luồng cho phép xử lý hay không
     bool isEditable = Model.Status == "DangXuLy";
@@ -104,19 +106,25 @@
         <form action="@Url.Action("UploadAttachment", "Report")" method="post" enctype="multipart/form-data" class="mb-4">
             @Html.AntiForgeryToken()
             <input type="hidden" name="reportId" value="@Model.Id" />
-            <div class="input-group input-group-sm">
-                <input type="file" name="file" class="form-control bg-light" accept="image/*" required />
-                <button type="submit" class="btn btn-secondary fw-bold px-3">
-                    <i class="fa-solid fa-cloud-arrow-up me-1"></i> TẢI ẢNH
-                </button>
+            <div class="position-relative">
+                <label for="fileInput" class="btn btn-outline-secondary w-100 py-3 rounded-4 border-dashed d-flex flex-column align-items-center justify-content-center gap-2" 
+                       style="border: 2px dashed #e2e8f0; background: #f8fafc; transition: all 0.3s ease;">
+                    <i class="fa-solid fa-images fs-3 text-muted"></i>
+                    <span class="fw-bold text-muted small">Bấm để chọn hoặc kéo thả ảnh minh chứng vào đây</span>
+                    <span class="text-muted" style="font-size: 0.7rem;">(Tự động tải lên sau khi chọn)</span>
+                </label>
+                <input type="file" name="file" id="fileInput" class="position-absolute inset-0 opacity-0 cursor-pointer" 
+                       style="top:0; left:0; width:100%; height:100%; cursor:pointer;"
+                       accept="image/*" required onchange="this.form.submit()" />
             </div>
         </form>
     }
 
     <div class="row g-2 mb-4">
-        @if (attachments.Any())
+        <h6 class="w-100 fw-bold mt-2 mb-2 text-dark" style="font-size:0.85rem">Ảnh từ người dân</h6>
+        @if (citizenAttachments.Any())
         {
-            @foreach (var img in attachments)
+            @foreach (var img in citizenAttachments)
             {
                 string imageBase64 = "";
                 if (img.FileData != null)
@@ -125,21 +133,44 @@
                 }
 
                 <div class="col-4 position-relative">
-                    @* Hiển thị ảnh từ chuỗi Base64 *@
                     <img src="@imageBase64" class="img-grid-item shadow-sm"
-                         onclick="viewImageModal('@imageBase64')" alt="Minh chứng từ DB" />
-
-                    @* Nút xóa (Nếu ở bên Handler) *@
-                    @if (isEditable) { /* Nút xóa cũ */ }
+                         onclick="viewImageModal('@imageBase64')" alt="Minh chứng từ người dân" />
                 </div>
             }
         }
         else
         {
             <div class="col-12">
-                <div class="p-4 bg-light rounded-3 text-center border border-dashed text-muted small">
-                    <i class="fa-solid fa-images d-block fs-2 mb-2 opacity-25"></i>
-                    Chưa có hình ảnh minh chứng.
+                <div class="p-3 bg-light rounded-3 text-center border border-dashed text-muted small">
+                    Chưa có hình ảnh minh chứng từ người dân.
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="row g-2 mb-2">
+        <h6 class="w-100 fw-bold mb-2 text-dark" style="font-size:0.85rem">Ảnh kết quả xử lý (Của bạn)</h6>
+        @if (resultAttachments.Any())
+        {
+            @foreach (var img in resultAttachments)
+            {
+                string imageBase64 = "";
+                if (img.FileData != null)
+                {
+                    imageBase64 = $"data:{img.ContentType};base64,{Convert.ToBase64String(img.FileData)}";
+                }
+
+                <div class="col-4 position-relative">
+                    <img src="@imageBase64" class="img-grid-item shadow-sm"
+                         onclick="viewImageModal('@imageBase64')" alt="Minh chứng kết quả xử lý" />
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="p-3 bg-light rounded-3 text-center border border-dashed text-muted small">
+                    Chưa có ảnh kết quả xử lý.
                 </div>
             </div>
         }
@@ -186,24 +217,16 @@
 
     <div class="col-lg-5">
 
-        <div class="content-box p-4 mb-4 shadow-sm border-top border-4 @(isEditable ? "border-primary" : "border-success")">
+        <div class="content-box p-4 mb-4 shadow-sm border-top border-2 @(isEditable ? "border-primary" : "border-success")">
             <h6 class="fw-bold mb-4 @(isEditable ? "text-primary" : "text-success")">
                 <i class="fa-solid fa-clipboard-check me-2"></i>BÁO CÁO KẾT QUẢ XỬ LÝ
             </h6>
 
             @if (isEditable)
             {
-                <form action="@Url.Action("SubmitResult", "Report")" method="post">
+                <form action="@Url.Action("SubmitResult", "Report")" method="post" id="submitResultForm">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="reportId" value="@Model.Id" />
-
-                    <div class="mb-4">
-                        <label class="form-label small fw-bold text-dark">Phân loại kết quả <span class="text-danger">*</span></label>
-                        <select name="resultStatus" class="form-select rounded-3 py-2 border-primary border-opacity-25" required>
-                            <option value="HoanThanh">Xử lý thành công (Hoàn thành)</option>
-                            <option value="TuChoi">Không thể xử lý (Từ chối)</option>
-                        </select>
-                    </div>
 
                     <div class="mb-4">
                         <label class="form-label small fw-bold text-dark">Chi tiết công việc đã thực hiện <span class="text-danger">*</span></label>
@@ -211,19 +234,32 @@
                               placeholder="Ghi rõ các biện pháp đã khắc phục tại hiện trường..."></textarea>
                     </div>
 
-                    <button type="submit" class="btn btn-primary w-100 py-3 fw-bold shadow-sm" style="border-radius: 12px;">
-                        XÁC NHẬN GỬI KẾT QUẢ
-                    </button>
+                    <div class="d-flex gap-2">
+                        <button type="submit" name="resultStatus" value="HoanThanh" class="btn btn-success flex-fill py-3 fw-bold shadow-sm" style="border-radius: 12px;">
+                            ĐỀ XUẤT HOÀN THÀNH
+                        </button>
+                        <button type="submit" name="resultStatus" value="TuChoi" class="btn btn-danger flex-fill py-3 fw-bold shadow-sm" style="border-radius: 12px;">
+                            ĐỀ XUẤT TỪ CHỐI
+                        </button>
+                    </div>
                 </form>
             }
-            else
+            @if (!isEditable)
             {
                 <div class="p-3 bg-light rounded-3 border border-dashed mb-2">
                     <div class="info-label">Nội dung báo cáo kết quả:</div>
                     <div class="text-dark fw-bold italic">"@Model.ResolutionNote"</div>
                 </div>
                 <div class="alert alert-info border-0 small m-0 mt-3">
-                    <i class="fa-solid fa-lock me-2"></i>Nhiệm vụ này đã được chốt kết quả và không thể chỉnh sửa thêm.
+                    <i class="fa-solid fa-lock me-2"></i>@(Model.Status == "ChoDuyetKq" ? "Đã gửi yêu cầu duyệt kết quả lên cấp trên. Vui lòng chờ phản hồi." : "Nhiệm vụ này đã được chốt kết quả và không thể chỉnh sửa thêm.")
+                </div>
+            }
+            
+            @if (!string.IsNullOrEmpty(Model.AdminFeedback))
+            {
+                <div class="mt-4 p-3 rounded-4 border-start border-4 border-info" style="background: #f0f9ff;">
+                    <div class="info-label text-info"><i class="fa-solid fa-comment-dots me-1"></i> Phản hồi từ Ban điều hành:</div>
+                    <div class="text-dark fw-bold">@Model.AdminFeedback</div>
                 </div>
             }
         </div>
@@ -252,3 +288,29 @@
         myModal.show();
     }
 </script>
+
+<!-- Modal Thông báo Thành công -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-body text-center p-5">
+                <div class="mb-4">
+                    <i class="fa-solid fa-circle-check text-success" style="font-size: 4rem;"></i>
+                </div>
+                <h5 class="fw-bold mb-3">Thành công!</h5>
+                <p class="text-muted mb-4">@TempData["Success"]</p>
+                <button type="button" class="btn btn-success w-100 rounded-3 fw-bold py-2" data-bs-dismiss="modal">ĐÓNG</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var successModal = new bootstrap.Modal(document.getElementById('successModal'));
+            successModal.show();
+        });
+    </script>
+}

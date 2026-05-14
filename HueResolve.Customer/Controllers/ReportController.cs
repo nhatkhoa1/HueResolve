@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -41,6 +41,13 @@ namespace HueResolve.Customer.Controllers
                 string userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
                 model.CustomerId = Guid.Parse(userIdString);
 
+                var currentUser = await UserService.GetUserByIdAsync(model.CustomerId.Value);
+                if (currentUser != null)
+                {
+                    model.ReporterName = currentUser.FullName;
+                    model.ReporterPhone = currentUser.PhoneNumber ?? string.Empty;
+                }
+
                 model.Id = Guid.NewGuid();
                 model.Status = "TiepNhan";
                 model.CreatedAtUtc = DateTime.UtcNow;
@@ -73,7 +80,8 @@ namespace HueResolve.Customer.Controllers
                             RelativePath = "DB_STORAGE",
                             ContentType = attachmentFile.ContentType,
                             CreatedAtUtc = DateTime.UtcNow,
-                            FileData = fileData
+                            FileData = fileData,
+                            AttachmentType = "Citizen"
                         };
 
                         await ReportService.SaveAttachmentAsync(model.Id, attachment);

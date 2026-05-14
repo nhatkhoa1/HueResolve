@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -37,6 +37,7 @@ namespace HueResolve.Admin.Controllers
             ViewBag.CountAll = stats.TotalReports;
             ViewBag.CountTiepNhan = stats.Pending;
             ViewBag.CountDangXuLy = stats.Processing;
+            ViewBag.CountChoDuyetKq = stats.PendingApproval;
             ViewBag.CountHoanThanh = stats.Completed;
             ViewBag.CountTuChoi = stats.Rejected;
 
@@ -169,6 +170,55 @@ namespace HueResolve.Admin.Controllers
                 TempData["Error"] = "Lỗi cập nhật trạng thái từ chối.";
             }
             return RedirectToAction("Index");
+        }
+
+        /// <summary>
+        /// Xử lý duyệt kết quả từ Cán bộ thực địa.
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApproveResult(Guid id, bool isApproved, string adminNote)
+        {
+            if (id == Guid.Empty) return BadRequest();
+
+            var report = await ReportService.GetReportByIdAsync(id);
+            if (report == null) return NotFound();
+
+            string userName = User.FindFirstValue(ClaimTypes.Name) ?? "Admin";
+            
+            string newStatus = "DangXuLy";
+            if (isApproved)
+            {
+                if (!string.IsNullOrEmpty(report.ResolutionNote) && report.ResolutionNote.Contains("[Đề xuất Từ chối]"))
+                {
+                    newStatus = "TuChoi";
+                }
+                else
+                {
+                    newStatus = "HoanThanh";
+                }
+            }
+
+            string finalNote = isApproved ? $"[Duyệt kết quả] {adminNote}" : $"[Yêu cầu xử lý lại] {adminNote}";
+
+            bool success = await ReportService.UpdateReportStatusAsync(id, newStatus, finalNote, userName);
+
+            if (success)
+            {
+                // Lưu ghi chú của Admin vào AdminFeedback để Handler/Customer có thể đọc được
+                await ReportService.SaveAdminFeedbackAsync(id, adminNote);
+
+                if (isApproved)
+                    TempData["Success"] = "Đã duyệt và gửi kết quả cho công dân thành công.";
+                else
+                    TempData["Success"] = "Đã trả lại phản ánh cho Đơn vị để xử lý lại.";
+            }
+            else
+            {
+                TempData["Error"] = "Lỗi xử lý duyệt kết quả.";
+            }
+
+            return RedirectToAction("Details", new { id = id });
         }
     }
 }

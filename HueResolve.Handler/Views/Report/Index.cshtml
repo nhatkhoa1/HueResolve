@@ -1,4 +1,4 @@
-﻿@model IEnumerable<HueResolve.Models.Model.Report>
+@model IEnumerable<HueResolve.Models.Model.Report>
 @{
     ViewData["Title"] = "Danh sách nhiệm vụ";
     int currentPage = ViewBag.CurrentPage ?? 1;
@@ -65,6 +65,8 @@
     <div class="d-flex gap-2">
         <a href="@Url.Action("Index", "Report", new { status = "DangXuLy" })"
            class="status-tab @(currentStatus == "DangXuLy" ? "active" : "")">Đang thực hiện</a>
+        <a href="@Url.Action("Index", "Report", new { status = "ChoDuyetKq" })"
+           class="status-tab @(currentStatus == "ChoDuyetKq" ? "active" : "")">Chờ kết quả duyệt</a>
         <a href="@Url.Action("Index", "Report", new { status = "HoanThanh" })"
            class="status-tab @(currentStatus == "HoanThanh" ? "active" : "")">Đã hoàn thành</a>
         <a href="@Url.Action("Index", "Report", new { status = "TuChoi" })"

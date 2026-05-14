@@ -1,4 +1,4 @@
-﻿@model IEnumerable<HueResolve.Models.Model.Report>
+@model IEnumerable<HueResolve.Models.Model.Report>
 @{
     ViewData["Title"] = "Danh sách Phản ánh";
 
@@ -12,16 +12,18 @@
     int countAll = ViewBag.CountAll != null ? (int)ViewBag.CountAll : 0;
     int countTiepNhan = ViewBag.CountTiepNhan != null ? (int)ViewBag.CountTiepNhan : 0;
     int countDangXuLy = ViewBag.CountDangXuLy != null ? (int)ViewBag.CountDangXuLy : 0;
+    int countChoDuyetKq = ViewBag.CountChoDuyetKq != null ? (int)ViewBag.CountChoDuyetKq : 0;
     int countHoanThanh = ViewBag.CountHoanThanh != null ? (int)ViewBag.CountHoanThanh : 0;
     int countTuChoi = ViewBag.CountTuChoi != null ? (int)ViewBag.CountTuChoi : 0;
 
     @* Danh sách các Tab lọc trạng thái *@
     var tabs = new[] {
         new { Status = (string?)null, Name = "Tất cả", Count = countAll, Class = "text-secondary" },
-        new { Status = "TiepNhan", Name = "Mới tiếp nhận", Count = countTiepNhan, Class = "text-primary" },
-        new { Status = "DangXuLy", Name = "Đang xử lý", Count = countDangXuLy, Class = "text-warning" },
-        new { Status = "HoanThanh", Name = "Đã hoàn thành", Count = countHoanThanh, Class = "text-success" },
-        new { Status = "TuChoi", Name = "Đã từ chối", Count = countTuChoi, Class = "text-danger" }
+        new { Status = (string?)"TiepNhan", Name = "Mới tiếp nhận", Count = countTiepNhan, Class = "text-primary" },
+        new { Status = (string?)"DangXuLy", Name = "Đang xử lý", Count = countDangXuLy, Class = "text-warning" },
+        new { Status = (string?)"ChoDuyetKq", Name = "Chờ kết quả duyệt", Count = countChoDuyetKq, Class = "text-info" },
+        new { Status = (string?)"HoanThanh", Name = "Đã hoàn thành", Count = countHoanThanh, Class = "text-success" },
+        new { Status = (string?)"TuChoi", Name = "Đã từ chối", Count = countTuChoi, Class = "text-danger" }
     };
 }
 
