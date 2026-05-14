@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -108,28 +108,38 @@ namespace HueResolve.Admin.Controllers
 
         /// <summary>
         /// Xử lý yêu cầu đổi mật khẩu.
+        /// Admin không cần nhập mật khẩu hiện tại — đặt lại trực tiếp.
         /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ChangePassword(Guid id, string currentPassword, string newPassword, string confirmPassword)
+        public async Task<IActionResult> ChangePassword(Guid id, string newPassword, string confirmPassword)
         {
-            if (newPassword != confirmPassword)
+            if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 6)
             {
-                ModelState.AddModelError("", "Mật khẩu mới và xác nhận mật khẩu không khớp.");
+                TempData["Error"] = "Mật khẩu mới phải có ít nhất 6 ký tự.";
                 ViewBag.UserId = id;
-                var user = await UserService.GetUserByIdAsync(id);
-                ViewBag.Username = user?.Username;
+                var u = await UserService.GetUserByIdAsync(id);
+                ViewBag.Username = u?.Username;
                 return View();
             }
 
-            bool success = await UserService.ChangePasswordAsync(id, currentPassword, newPassword);
+            if (newPassword != confirmPassword)
+            {
+                TempData["Error"] = "Mật khẩu mới và xác nhận mật khẩu không khớp.";
+                ViewBag.UserId = id;
+                var u = await UserService.GetUserByIdAsync(id);
+                ViewBag.Username = u?.Username;
+                return View();
+            }
+
+            bool success = await UserService.ForceChangePasswordAsync(id, newPassword);
             if (success)
             {
                 TempData["Success"] = "Đổi mật khẩu thành công.";
                 return RedirectToAction("Details", new { id });
             }
 
-            ModelState.AddModelError("", "Mật khẩu hiện tại không chính xác hoặc không thể cập nhật.");
+            TempData["Error"] = "Không thể cập nhật mật khẩu. Vui lòng thử lại.";
             ViewBag.UserId = id;
             var targetUser = await UserService.GetUserByIdAsync(id);
             ViewBag.Username = targetUser?.Username;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -43,6 +43,12 @@ namespace HueResolve.Customer.Controllers
             if (user == null)
             {
                 ViewBag.Error = "Tên đăng nhập hoặc mật khẩu không chính xác.";
+                return View();
+            }
+
+            if (!user.IsActive)
+            {
+                ViewBag.Error = "Tài khoản hiện đang bị khóa, vui lòng thử lại sau.";
                 return View();
             }
 

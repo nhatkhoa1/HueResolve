@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
@@ -39,6 +39,8 @@ namespace HueResolve.Business.Services
 
         /// <summary>
         /// Xác thực thông tin đăng nhập của người dùng.
+        /// Trả về User nếu username và mật khẩu khớp (kể cả tài khoản bị khóa).
+        /// Caller có trách nhiệm kiểm tra IsActive để hiển thị thông báo phù hợp.
         /// </summary>
         public static async Task<User?> AuthenticateAsync(string username, string rawPassword)
         {
@@ -99,7 +101,7 @@ namespace HueResolve.Business.Services
         }
 
         /// <summary>
-        /// Đổi mật khẩu cho tài khoản.
+        /// Đổi mật khẩu cho tài khoản (có xác thực mật khẩu hiện tại).
         /// </summary>
         public static async Task<bool> ChangePasswordAsync(Guid userId, string currentRawPassword, string newRawPassword)
         {
@@ -112,6 +114,21 @@ namespace HueResolve.Business.Services
                 return false;
 
             // Cập nhật mật khẩu mới
+            string newPasswordHash = HashMD5(newRawPassword);
+            int result = await _userRepository.UpdatePasswordAsync(userId, newPasswordHash);
+            return result > 0;
+        }
+
+        /// <summary>
+        /// Đặt lại mật khẩu cho tài khoản mà không cần xác thực mật khẩu cũ.
+        /// Dành riêng cho Admin khi quản lý tài khoản người dùng khác.
+        /// </summary>
+        public static async Task<bool> ForceChangePasswordAsync(Guid userId, string newRawPassword)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+                return false;
+
             string newPasswordHash = HashMD5(newRawPassword);
             int result = await _userRepository.UpdatePasswordAsync(userId, newPasswordHash);
             return result > 0;

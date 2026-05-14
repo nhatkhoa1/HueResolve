@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -54,6 +54,12 @@ namespace HueResolve.Handler.Controllers
             if (user == null)
             {
                 ViewBag.Error = "Tên đăng nhập hoặc mật khẩu không đúng.";
+                return View();
+            }
+
+            if (!user.IsActive)
+            {
+                ViewBag.Error = "Tài khoản hiện đang bị khóa, vui lòng thử lại sau.";
                 return View();
             }
 

@@ -1,10 +1,16 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection;
 using HueResolve.Business.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 /// 1. Cấu hình các dịch vụ MVC
 builder.Services.AddControllersWithViews();
+
+// Lưu Data Protection key vào thư mục cố định để tránh lỗi cookie sau mỗi lần restart
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(Path.Combine(builder.Environment.ContentRootPath, ".dp-keys")))
+    .SetApplicationName("HueResolve.Customer");
 
 /// 2. Cấu hình Xác thực (Authentication) bằng Cookie dành cho Người dân
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
