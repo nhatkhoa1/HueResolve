@@ -161,5 +161,44 @@ namespace HueResolve.Customer.Controllers
 
             return View(myReports);
         }
+
+        /// <summary>
+        /// POST: Xóa phản ánh của người dân (chỉ xóa được khi chưa giao cho đơn vị xử lý).
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            string userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+            if (!Guid.TryParse(userIdString, out Guid customerId))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var report = await ReportService.GetReportByIdAsync(id);
+            if (report == null || report.CustomerId != customerId)
+            {
+                TempData["Error"] = "Không tìm thấy phản ánh hoặc bạn không có quyền xóa.";
+                return RedirectToAction("MyReports");
+            }
+
+            if (report.AssignedDepartmentId.HasValue)
+            {
+                TempData["Error"] = "Không thể xóa phản ánh đã được giao cho đơn vị xử lý.";
+                return RedirectToAction("MyReports");
+            }
+
+            bool success = await ReportService.DeleteReportAsync(id);
+            if (success)
+            {
+                TempData["Success"] = "Đã xóa phản ánh thành công.";
+            }
+            else
+            {
+                TempData["Error"] = "Có lỗi xảy ra khi xóa phản ánh.";
+            }
+
+            return RedirectToAction("MyReports");
+        }
     }
 }

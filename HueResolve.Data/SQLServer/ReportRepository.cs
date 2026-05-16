@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
@@ -329,6 +329,28 @@ namespace HueResolve.Data.SQLServer
             using var connection = new SqlConnection(_connectionString);
             string sql = "SELECT * FROM [dbo].[Reports] WHERE CustomerId = @CustomerId ORDER BY CreatedAtUtc DESC";
             return await connection.QueryAsync<Report>(sql, new { CustomerId = customerId });
+        }
+
+        public async Task<bool> DeleteAsync(Guid id)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+            using var transaction = connection.BeginTransaction();
+            try
+            {
+                await connection.ExecuteAsync("DELETE FROM [dbo].[ReportStatusHistories] WHERE ReportId = @Id", new { Id = id }, transaction);
+                await connection.ExecuteAsync("DELETE FROM [dbo].[ReportAttachments] WHERE ReportId = @Id", new { Id = id }, transaction);
+                
+                int rows = await connection.ExecuteAsync("DELETE FROM [dbo].[Reports] WHERE Id = @Id", new { Id = id }, transaction);
+                
+                transaction.Commit();
+                return rows > 0;
+            }
+            catch (Exception)
+            {
+                transaction.Rollback();
+                return false;
+            }
         }
     }
 }

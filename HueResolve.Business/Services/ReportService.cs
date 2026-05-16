@@ -339,6 +339,18 @@ namespace HueResolve.Business.Services
             return notifications.OrderByDescending(n => n.CreatedAtUtc);
         }
 
+        /// <summary>
+        /// Xóa phản ánh khỏi hệ thống nếu chưa được phân công cho đơn vị xử lý.
+        /// </summary>
+        public static async Task<bool> DeleteReportAsync(Guid reportId)
+        {
+            var report = await _reportRepository.GetByIdAsync(reportId);
+            if (report == null || report.AssignedDepartmentId.HasValue)
+            {
+                return false;
+            }
+            return await _reportRepository.DeleteAsync(reportId);
+        }
     }
 
     /// <summary>

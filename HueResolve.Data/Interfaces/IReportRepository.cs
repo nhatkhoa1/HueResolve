@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using HueResolve.Models.Model;
@@ -57,5 +57,8 @@ namespace HueResolve.Data.Interfaces
         /// Lấy danh sách phản ánh theo ID của người dân (Dành cho chức năng MyReports)
         /// </summary>
         Task<IEnumerable<Report>> GetByCustomerIdAsync(Guid customerId);
+        
+        /// <summary>Xóa hoàn toàn phản ánh khỏi hệ thống.</summary>
+        Task<bool> DeleteAsync(Guid id);
     }
 }
