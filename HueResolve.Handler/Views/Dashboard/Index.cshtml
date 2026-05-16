@@ -62,43 +62,8 @@
 </div>
 
 <div class="row g-4 mb-5">
-    <div class="col-xl-3 col-sm-6">
-        <a href="@Url.Action("Index", "Report", new { status = "TiepNhan" })" class="text-decoration-none" title="Nhấn để xem danh sách phản ánh chưa xử lý">
-            <div class="card stat-card shadow-sm h-100 position-relative" style="cursor:pointer;">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div class="icon-box bg-primary bg-opacity-10 text-primary">
-                            <i class="fa-solid fa-envelope-open-text"></i>
-                        </div>
-                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill d-flex align-items-center gap-1">
-                            <span class="position-relative">
-                                <span class="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-danger" style="font-size:.55rem;padding:3px 5px;">
-                                    @ViewBag.CountTiepNhan
-                                </span>
-                            </span>
-                            Phân công mới
-                        </span>
-                    </div>
-                    <h2 class="fw-extrabold mb-1">@ViewBag.CountTiepNhan</h2>
-                    <div class="text-muted small fw-medium">Nhiệm vụ vừa được IOC giao</div>
-                    <div class="mt-2 pt-2 border-top" style="font-size:.78rem;color:var(--handler-indigo);font-weight:600;">
-                        <i class="fa-solid fa-arrow-right me-1"></i> Xem danh sách chưa xử lý
-                    </div>
-                </div>
-                @if (ViewBag.CountTiepNhan > 0)
-                {
-                    <div class="position-absolute top-0 end-0 m-2">
-                        <span class="badge rounded-pill bg-primary" style="font-size:.65rem;animation:pulse 1.5s infinite;">
-                            <i class="fa-solid fa-bell"></i>
-                        </span>
-                    </div>
-                }
-            </div>
-        </a>
-    </div>
 
-
-    <div class="col-xl-3 col-sm-6">
+    <div class="col-lg-4 col-md-6 mb-4">
         <div class="card stat-card shadow-sm h-100">
             <div class="card-body p-4">
                 <div class="d-flex justify-content-between align-items-start mb-3">
@@ -113,7 +78,7 @@
         </div>
     </div>
 
-    <div class="col-xl-3 col-sm-6">
+    <div class="col-lg-4 col-md-6 mb-4">
         <div class="card stat-card shadow-sm h-100" style="background: #fff5f5;">
             <div class="card-body p-4">
                 <div class="d-flex justify-content-between align-items-start mb-3">
@@ -128,7 +93,7 @@
         </div>
     </div>
 
-    <div class="col-xl-3 col-sm-6">
+    <div class="col-lg-4 col-md-12 mb-4">
         <div class="card stat-card shadow-sm h-100">
             <div class="card-body p-4">
                 <div class="d-flex justify-content-between align-items-start mb-3">

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
@@ -31,7 +31,7 @@ namespace HueResolve.Data.SQLServer
         {
             using var connection = new SqlConnection(_connectionString);
             string sql = @"
-                SELECT [Id], [FullName], [Username], [PasswordHash], [RoleId], [CreatedAtUtc], [PhoneNumber], [AddressText], [DepartmentId], [IsActive]
+                SELECT [Id], [FullName], [Username], [PasswordHash], [RoleId], [CreatedAtUtc], [PhoneNumber], [AddressText], [DepartmentId], [IsActive], [AvatarPath]
                 FROM [dbo].[Users]
                 WHERE [Username] = @Username;";
             return await connection.QuerySingleOrDefaultAsync<User>(sql, new { Username = username });
@@ -44,7 +44,7 @@ namespace HueResolve.Data.SQLServer
         {
             using var connection = new SqlConnection(_connectionString);
             string sql = @"
-                SELECT [Id], [FullName], [Username], [PasswordHash], [RoleId], [CreatedAtUtc], [PhoneNumber], [AddressText], [DepartmentId], [IsActive]
+                SELECT [Id], [FullName], [Username], [PasswordHash], [RoleId], [CreatedAtUtc], [PhoneNumber], [AddressText], [DepartmentId], [IsActive], [AvatarPath]
                 FROM [dbo].[Users]
                 WHERE [Id] = @Id;";
             return await connection.QuerySingleOrDefaultAsync<User>(sql, new { Id = id });
@@ -60,7 +60,7 @@ namespace HueResolve.Data.SQLServer
             string searchPattern = string.IsNullOrWhiteSpace(search) ? null! : $"%{search}%";
 
             string sqlData = @"
-                SELECT [Id], [FullName], [Username], [RoleId], [CreatedAtUtc], [PhoneNumber], [IsActive]
+                SELECT [Id], [FullName], [Username], [RoleId], [CreatedAtUtc], [PhoneNumber], [IsActive], [AvatarPath]
                 FROM [dbo].[Users]
                 WHERE (@RoleId IS NULL OR [RoleId] = @RoleId)
                 AND (@Search IS NULL OR [FullName] LIKE @Search OR [Username] LIKE @Search)
@@ -87,10 +87,10 @@ namespace HueResolve.Data.SQLServer
             string sql = @"
                 INSERT INTO [dbo].[Users] (
                     [Id], [FullName], [Username], [PasswordHash], [RoleId],
-                    [CreatedAtUtc], [PhoneNumber], [AddressText], [DepartmentId], [IsActive]
+                    [CreatedAtUtc], [PhoneNumber], [AddressText], [DepartmentId], [IsActive], [AvatarPath]
                 ) VALUES (
                     @Id, @FullName, @Username, @PasswordHash, @RoleId,
-                    @CreatedAtUtc, @PhoneNumber, @AddressText, @DepartmentId, @IsActive
+                    @CreatedAtUtc, @PhoneNumber, @AddressText, @DepartmentId, @IsActive, @AvatarPath
                 );";
             return await connection.ExecuteAsync(sql, user);
         }
@@ -123,7 +123,7 @@ namespace HueResolve.Data.SQLServer
             using var connection = new SqlConnection(_connectionString);
             string sql = @"
                 UPDATE [dbo].[Users]
-                SET [FullName] = @FullName, [PhoneNumber] = @PhoneNumber, [AddressText] = @AddressText
+                SET [FullName] = @FullName, [PhoneNumber] = @PhoneNumber, [AddressText] = @AddressText, [AvatarPath] = @AvatarPath
                 WHERE [Id] = @Id;";
             return await connection.ExecuteAsync(sql, user);
         }

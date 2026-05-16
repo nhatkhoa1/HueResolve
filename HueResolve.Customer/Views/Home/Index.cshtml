@@ -1,4 +1,4 @@
-﻿@model IEnumerable<HueResolve.Models.Model.Report>
+@model IEnumerable<HueResolve.Models.Model.Report>
 @{
     ViewData["Title"] = "Cổng thông tin phản ánh hiện trường";
 }
@@ -38,7 +38,7 @@
                     <h6 class="fw-bold m-0 text-dark"><i class="fa-solid fa-map-location-dot text-danger me-2"></i>Bản đồ sự cố trực tuyến</h6>
                     <span class="badge bg-light text-muted border small"><i class="fa-solid fa-circle text-success me-1" style="font-size:8px;"></i>Trực tiếp</span>
                 </div>
-                <div id="heatmap" style="height: 550px; background: #eee;"></div>
+                <div id="heatmap" style="height: 60vh; min-height: 400px; max-height: 600px; background: #eee;"></div>
             </div>
         </div>
 
@@ -47,7 +47,7 @@
                 <div class="card-header bg-white py-3 border-0">
                     <h6 class="fw-bold m-0 text-dark"><i class="fa-solid fa-bolt text-warning me-2"></i>Phản ánh mới nhất</h6>
                 </div>
-                <div class="card-body p-0" style="max-height: 550px; overflow-y: auto;">
+                <div class="card-body p-0" style="max-height: 60vh; min-height: 400px; overflow-y: auto;">
                     <div class="list-group list-group-flush">
                         @if (Model != null && Model.Any())
                         {

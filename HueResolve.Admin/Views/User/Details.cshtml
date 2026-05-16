@@ -37,28 +37,34 @@
                 <h5 class="m-0 fw-bold"><i class="fa-solid fa-user-circle me-2"></i>Thông Tin Cơ Bản</h5>
             </div>
             <div class="card-body p-4">
-                <div class="mb-3">
-                    <label class="form-label fw-bold small text-muted">Họ và Tên</label>
-                    <p class="text-dark">@Model.FullName</p>
+                <div class="text-center mb-4">
+                    @if (!string.IsNullOrEmpty(Model.AvatarPath))
+                    {
+                        <img src="@Model.AvatarPath" alt="Avatar" class="rounded-circle object-fit-cover shadow-sm border" style="width: 120px; height: 120px;" />
+                    }
+                    else
+                    {
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm border mx-auto" style="width: 120px; height: 120px;">
+                            <i class="fa-solid fa-user" style="font-size: 3rem;"></i>
+                        </div>
+                    }
+                    <h5 class="fw-bold mt-3 text-dark mb-1">@Model.FullName</h5>
+                    <span class="badge" style="background: var(--accent-blue);">
+                        @(roleNames.ContainsKey(Model.RoleId) ? roleNames[Model.RoleId] : "Không xác định")
+                    </span>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label fw-bold small text-muted">Tên Đăng Nhập</label>
-                    <p class="text-dark">@Model.Username</p>
-                </div>
+                <hr class="mb-4" />
 
-                <div class="mb-3">
-                    <label class="form-label fw-bold small text-muted">Vai Trò</label>
-                    <p class="text-dark">
-                        <span class="badge" style="background: var(--accent-blue);">
-                            @(roleNames.ContainsKey(Model.RoleId) ? roleNames[Model.RoleId] : "Không xác định")
-                        </span>
-                    </p>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-bold small text-muted">Số Điện Thoại</label>
-                    <p class="text-dark">@(string.IsNullOrEmpty(Model.PhoneNumber) ? "Chưa cập nhật" : Model.PhoneNumber)</p>
+                <div class="row">
+                    <div class="col-sm-6 mb-3">
+                        <label class="form-label fw-bold small text-muted">Tên Đăng Nhập</label>
+                        <p class="text-dark">@Model.Username</p>
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <label class="form-label fw-bold small text-muted">Số Điện Thoại</label>
+                        <p class="text-dark">@(string.IsNullOrEmpty(Model.PhoneNumber) ? "Chưa cập nhật" : Model.PhoneNumber)</p>
+                    </div>
                 </div>
 
                 <div class="mb-3">
@@ -66,27 +72,28 @@
                     <p class="text-dark">@(string.IsNullOrEmpty(Model.AddressText) ? "Chưa cập nhật" : Model.AddressText)</p>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label fw-bold small text-muted">Ngày Tạo Tài Khoản</label>
-                    <p class="text-dark">@Model.CreatedAtUtc.ToString("dd/MM/yyyy HH:mm:ss")</p>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-bold small text-muted">Trạng Thái</label>
-                    <p class="text-dark">
-                        @if (Model.IsActive)
-                        {
-                            <span class="badge bg-success">
-                                <i class="fa-solid fa-circle me-1"></i> Đang hoạt động
-                            </span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-danger">
-                                <i class="fa-solid fa-circle-slash me-1"></i> Bị khóa
-                            </span>
-                        }
-                    </p>
+                <div class="row">
+                    <div class="col-sm-6 mb-3">
+                        <label class="form-label fw-bold small text-muted">Ngày Tạo Tài Khoản</label>
+                        <p class="text-dark">@Model.CreatedAtUtc.ToString("dd/MM/yyyy HH:mm")</p>
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <label class="form-label fw-bold small text-muted">Trạng Thái</label>
+                        <p class="text-dark">
+                            @if (Model.IsActive)
+                            {
+                                <span class="badge bg-success">
+                                    <i class="fa-solid fa-circle me-1"></i> Đang hoạt động
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">
+                                    <i class="fa-solid fa-circle-slash me-1"></i> Bị khóa
+                                </span>
+                            }
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>

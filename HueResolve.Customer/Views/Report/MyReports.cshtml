@@ -1,4 +1,4 @@
-﻿@model IEnumerable<HueResolve.Models.Model.Report>
+@model IEnumerable<HueResolve.Models.Model.Report>
 @{
     ViewData["Title"] = "Lịch sử phản ánh của tôi";
 }
@@ -20,7 +20,14 @@
         <div class="card-body p-0">
             @if (Model != null && Model.Any())
             {
-                <div class="table-responsive">
+                <style>
+                    .hover-bg-light:hover { background-color: #f8fafc; }
+                    .transition-all { transition: all 0.2s ease; }
+                    .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+                </style>
+
+                <!-- Desktop Table View -->
+                <div class="table-responsive d-none d-lg-block">
                     <table class="table table-hover align-middle mb-0">
                         <thead class="bg-light text-muted small text-uppercase">
                             <tr>
@@ -40,15 +47,16 @@
                                     "DangXuLy" => ("bg-warning text-dark", "Đang xử lý"),
                                     "HoanThanh" => ("bg-success text-white", "Hoàn thành"),
                                     "TuChoi" => ("bg-danger text-white", "Từ chối"),
+                                    "ChoDuyetKq" => ("bg-info bg-opacity-10 text-info border border-info", "Chờ kết quả"),
                                     _ => ("bg-secondary text-white", item.Status)
                                 };
 
                                 <tr>
                                     <td class="px-4 py-3 fw-bold text-primary">#@item.TrackingCode</td>
                                     <td class="py-3 fw-bold text-dark" style="max-width: 300px;">
-                                        <div class="text-truncate">@item.Title</div>
+                                        <div class="text-truncate" title="@item.Title">@item.Title</div>
                                     </td>
-                                    <td class="py-3 text-muted small">@item.CreatedAtUtc.AddHours(7).ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td class="py-3 text-muted small"><i class="fa-regular fa-clock me-1"></i> @item.CreatedAtUtc.AddHours(7).ToString("dd/MM/yyyy HH:mm")</td>
                                     <td class="py-3">
                                         <span class="badge @statusClass rounded-pill">@statusText</span>
                                     </td>
@@ -61,6 +69,36 @@
                             }
                         </tbody>
                     </table>
+                </div>
+
+                <!-- Mobile Card View -->
+                <div class="d-lg-none">
+                    @foreach (var item in Model)
+                    {
+                        var (statusClass, statusText) = item.Status switch
+                        {
+                            "TiepNhan" => ("bg-info text-dark", "Đã tiếp nhận"),
+                            "DangXuLy" => ("bg-warning text-dark", "Đang xử lý"),
+                            "HoanThanh" => ("bg-success text-white", "Hoàn thành"),
+                            "TuChoi" => ("bg-danger text-white", "Từ chối"),
+                            "ChoDuyetKq" => ("bg-info bg-opacity-10 text-info border border-info", "Chờ kết quả"),
+                            _ => ("bg-secondary text-white", item.Status)
+                        };
+
+                        <div class="border-bottom p-3 hover-bg-light transition-all">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="badge @statusClass rounded-pill">@statusText</span>
+                                <span class="text-muted small"><i class="fa-regular fa-clock me-1"></i> @item.CreatedAtUtc.AddHours(7).ToString("dd/MM/yyyy HH:mm")</span>
+                            </div>
+                            <h6 class="fw-bold text-dark mb-3 line-clamp-2">@item.Title</h6>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold text-primary fs-6">#@item.TrackingCode</span>
+                                <a href="@Url.Action("Track", "Home", new { code = item.TrackingCode })" class="btn btn-sm btn-outline-primary fw-bold rounded-3 px-3">
+                                    Chi tiết <i class="fa-solid fa-arrow-right ms-1" style="font-size: 0.8em;"></i>
+                                </a>
+                            </div>
+                        </div>
+                    }
                 </div>
             }
             else

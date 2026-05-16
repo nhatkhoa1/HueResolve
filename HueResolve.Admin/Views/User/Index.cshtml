@@ -10,13 +10,13 @@
         new { RoleId = (int?)null, Name = "Tất cả"      },
         new { RoleId = (int?)1,    Name = "Quản trị viên"        },
         new { RoleId = (int?)2,    Name = "Cán bộ IOC"   },
-        new { RoleId = (int?)4,    Name = "Tài khoản Đơn vị" },
+        new { RoleId = (int?)4,    Name = "Đơn vị xử lý" },
         new { RoleId = (int?)3,    Name = "Người dân"     }
     };
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="fw-bold m-0" style="color: var(--text-main);">Quản lý Tài khoản</h4>
+    <h3 class="fw-bold text-dark m-0" style="letter-spacing: -0.5px;">Quản lý Tài khoản</h3>
     <a href="@Url.Action("Create")" class="btn-premium-add text-decoration-none">
         <i class="fa-solid fa-circle-plus fs-5"></i> <span>Thêm Tài khoản</span>
     </a>
@@ -40,7 +40,7 @@
     {
         bool isActive = ViewBag.CurrentRoleId == tab.RoleId;
         <li class="nav-item">
-            <a class="nav-link rounded-pill px-4 py-2 fw-medium border @(isActive ? "active shadow-sm" : "bg-white text-muted")"
+            <a class="nav-link rounded-pill px-4 py-2 fw-bold small border @(isActive ? "active shadow-sm" : "bg-white text-muted")"
                style="@(isActive ? "background: var(--accent-blue); color: white; border-color: var(--accent-blue);" : "border-color: var(--border-color);")"
                href="@Url.Action("Index", new { roleId = tab.RoleId, search = ViewBag.CurrentSearch })">
                 @tab.Name

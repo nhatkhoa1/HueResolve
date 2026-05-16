@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using HueResolve.Business.Services;
@@ -51,6 +51,44 @@ namespace HueResolve.Handler.Controllers
                 .Take(6);
 
             return View(recentReports);
+        }
+        /// <summary>
+        /// API lấy danh sách thông báo (nhiệm vụ mới) cho Đơn vị xử lý.
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> GetNotifications()
+        {
+            var deptIdClaim = User.FindFirstValue("DepartmentId");
+            if (!int.TryParse(deptIdClaim, out int departmentId))
+            {
+                return Json(new { count = 0, items = new object[0] });
+            }
+
+            var allReports = await ReportService.GetAllReportsAsync();
+            var newAssignments = allReports
+                .Where(r => r.AssignedDepartmentId == departmentId && r.Status == "TiepNhan")
+                .OrderByDescending(r => r.CreatedAtUtc)
+                .ToList();
+
+            var items = newAssignments.Take(5).Select(r => new
+            {
+                id = r.Id,
+                trackingCode = r.TrackingCode,
+                title = "Phân công xử lý mới",
+                note = r.Title.Length > 50 ? r.Title.Substring(0, 47) + "..." : r.Title,
+                timeAgo = GetTimeAgo(r.CreatedAtUtc)
+            });
+
+            return Json(new { count = newAssignments.Count, items });
+        }
+
+        private string GetTimeAgo(DateTime past)
+        {
+            var span = DateTime.UtcNow - past;
+            if (span.TotalMinutes < 1) return "Vừa xong";
+            if (span.TotalMinutes < 60) return $"{(int)span.TotalMinutes} phút trước";
+            if (span.TotalHours < 24) return $"{(int)span.TotalHours} giờ trước";
+            return $"{(int)span.TotalDays} ngày trước";
         }
     }
 }

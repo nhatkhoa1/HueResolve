@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace HueResolve.Models.Model
 {
@@ -38,5 +38,8 @@ namespace HueResolve.Models.Model
 
         /// <summary>Trạng thái hoạt động của tài khoản (1: Active, 0: Inactive)</summary>
         public bool IsActive { get; set; }
+
+        /// <summary>Đường dẫn ảnh đại diện (Cho phép Null)</summary>
+        public string? AvatarPath { get; set; }
     }
 }

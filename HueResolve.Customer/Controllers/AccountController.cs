@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -59,12 +61,12 @@ namespace HueResolve.Customer.Controllers
             }
 
             var claims = new List<Claim>
-    {
-        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-        new Claim(ClaimTypes.Name, user.FullName),
-        new Claim(ClaimTypes.Role, "Citizen"),
-        new Claim("Username", user.Username)
-    };
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.FullName),
+                new Claim(ClaimTypes.Role, "Citizen"),
+                new Claim("Username", user.Username)
+            };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
@@ -180,29 +182,62 @@ namespace HueResolve.Customer.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditProfile(string fullName, string? phoneNumber, string? addressText)
+        public async Task<IActionResult> EditProfile(string fullName, string? phoneNumber, string? addressText, IFormFile? avatarFile)
         {
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!Guid.TryParse(userIdStr, out Guid userId))
                 return RedirectToAction("Login");
 
+            var existingUser = await UserService.GetUserByIdAsync(userId);
+            if (existingUser == null)
+                return RedirectToAction("Login");
+
             if (string.IsNullOrWhiteSpace(fullName))
             {
                 ViewBag.Error = "Họ tên không được để trống.";
-                var user = await UserService.GetUserByIdAsync(userId);
-                return View(user);
+                return View(existingUser);
             }
 
-            bool success = await UserService.UpdateUserInfoAsync(userId, fullName, phoneNumber, addressText);
+            string? avatarPath = null;
+            if (avatarFile != null && avatarFile.Length > 0)
+            {
+                using (var ms = new MemoryStream())
+                {
+                    await avatarFile.CopyToAsync(ms);
+                    var bytes = ms.ToArray();
+                    var base64 = Convert.ToBase64String(bytes);
+                    avatarPath = $"data:{avatarFile.ContentType};base64,{base64}";
+                }
+            }
+
+            bool success = await UserService.UpdateUserInfoAsync(userId, fullName, phoneNumber, addressText, avatarPath);
             if (success)
             {
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+                    new Claim(ClaimTypes.Name, fullName),
+                    new Claim(ClaimTypes.Role, "Citizen"),
+                    new Claim("Username", existingUser.Username)
+                };
+
+                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var principal = new ClaimsPrincipal(identity);
+                await HttpContext.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme,
+                    principal,
+                    new AuthenticationProperties
+                    {
+                        IsPersistent = true,
+                        ExpiresUtc = DateTimeOffset.UtcNow.AddDays(30)
+                    });
+
                 TempData["Success"] = "Cập nhật thông tin thành công.";
                 return RedirectToAction("Profile");
             }
 
             ViewBag.Error = "Cập nhật thất bại. Vui lòng thử lại.";
-            var currentUser = await UserService.GetUserByIdAsync(userId);
-            return View(currentUser);
+            return View(existingUser);
         }
 
         /// <summary>

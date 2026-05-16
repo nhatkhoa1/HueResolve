@@ -24,9 +24,6 @@ namespace HueResolve.Admin.Controllers
         public async Task<IActionResult> Index(string? status = null, int? categoryId = null, string? search = null, int page = 1)
         {
             if (page < 1) page = 1;
-            status = string.IsNullOrWhiteSpace(status) ? null : status.Trim();
-            search = string.IsNullOrWhiteSpace(search) ? null : search.Trim();
-
             var (reports, totalCount) = await ReportService.GetPagedReportsAsync(page, PageSize, status, categoryId, search);
             var stats = await ReportService.GetDashboardStatsAsync();
 
@@ -35,7 +32,6 @@ namespace HueResolve.Admin.Controllers
             ViewBag.CurrentCategoryId = categoryId;
             ViewBag.CurrentSearch = search;
             ViewBag.CurrentPage = page;
-            ViewBag.TotalCount = totalCount;
             ViewBag.TotalPages = (int)Math.Ceiling((double)totalCount / PageSize);
 
             ViewBag.CountAll = stats.TotalReports;
@@ -223,6 +219,25 @@ namespace HueResolve.Admin.Controllers
             }
 
             return RedirectToAction("Details", new { id = id });
+        }
+
+        /// <summary>
+        /// API gọi từ Giao diện phân công để AI gợi ý đơn vị xử lý.
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> SuggestDepartmentAi(Guid id)
+        {
+            var report = await ReportService.GetReportByIdAsync(id);
+            if (report == null) return Json(new { success = false, message = "Không tìm thấy phản ánh" });
+
+            var suggestions = await AIService.SuggestDepartmentAsync(report.Title, report.Description, report.CategoryId);
+            
+            if (suggestions != null && suggestions.Any())
+            {
+                return Json(new { success = true, suggestions = suggestions });
+            }
+
+            return Json(new { success = false, message = "AI không thể đưa ra gợi ý cho phản ánh này." });
         }
     }
 }

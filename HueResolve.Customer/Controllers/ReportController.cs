@@ -32,10 +32,32 @@ namespace HueResolve.Customer.Controllers
         /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Report model, IFormFile? attachmentFile)
+        public async Task<IActionResult> Create(Report model, List<IFormFile>? attachmentFiles)
         {
             try
             {
+                if (attachmentFiles != null && attachmentFiles.Count > 0)
+                {
+                    int imgCount = 0, vidCount = 0;
+                    foreach (var f in attachmentFiles)
+                    {
+                        if (f.ContentType.StartsWith("image/")) imgCount++;
+                        else if (f.ContentType.StartsWith("video/")) vidCount++;
+                        else
+                        {
+                            ViewBag.Error = "Định dạng file không được hỗ trợ. Chỉ cho phép ảnh và video.";
+                            ViewBag.Categories = await CategoryService.GetAllCategoriesAsync();
+                            return View(model);
+                        }
+                    }
+                    if (imgCount > 3 || vidCount > 1)
+                    {
+                        ViewBag.Error = "Chỉ được phép tải lên tối đa 3 ảnh và 1 video.";
+                        ViewBag.Categories = await CategoryService.GetAllCategoriesAsync();
+                        return View(model);
+                    }
+                }
+
                 /// 1. Bổ sung các thông tin ẩn cho Report
                 /// Lấy CustomerId từ phiên đăng nhập hiện tại
                 string userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
@@ -51,9 +73,22 @@ namespace HueResolve.Customer.Controllers
                 model.Id = Guid.NewGuid();
                 model.Status = "TiepNhan";
                 model.CreatedAtUtc = DateTime.UtcNow;
-                model.NeedsReview = true; /// Mặc định cần duyệt nếu AI chưa chạy (Sẽ tích hợp AI sau)
 
-                                          /// Tạo mã tra cứu ngẫu nhiên (Ví dụ: HUE-20260507-1234)
+                /// Tích hợp AI phân loại tự động nếu người dân không chọn Lĩnh vực
+                if (!model.CategoryId.HasValue || model.CategoryId == 0)
+                {
+                    var predictedCategory = await AIService.PredictCategoryAsync(model.Title, model.Description);
+                    if (predictedCategory != null)
+                    {
+                        model.CategoryId = predictedCategory.Id;
+                        model.ClassificationState = "AI_Auto_Classified";
+                        model.AiConfidence = 0.85; /// Mock độ tin cậy
+                    }
+                }
+
+                model.NeedsReview = true; /// Mặc định cần duyệt lại kết quả AI hoặc phân loại thủ công
+
+                /// Tạo mã tra cứu ngẫu nhiên (Ví dụ: HUE-20260507-1234)
                 string datePart = DateTime.Now.ToString("yyyyMMdd");
                 string randomPart = new Random().Next(1000, 9999).ToString();
                 model.TrackingCode = $"HUE-{datePart}-{randomPart}";
@@ -65,26 +100,29 @@ namespace HueResolve.Customer.Controllers
                 if (isReportSaved)
                 {
                     /// 3. Xử lý lưu File đính kèm dưới dạng Mảng Byte (Base64)
-                    if (attachmentFile != null && attachmentFile.Length > 0)
+                    if (attachmentFiles != null && attachmentFiles.Count > 0)
                     {
-                        using var memoryStream = new MemoryStream();
-                        await attachmentFile.CopyToAsync(memoryStream);
-                        byte[] fileData = memoryStream.ToArray();
-
-                        var attachment = new ReportAttachment
+                        foreach (var f in attachmentFiles)
                         {
-                            Id = Guid.NewGuid(),
-                            ReportId = model.Id,
-                            OriginalFileName = attachmentFile.FileName,
-                            StoredFileName = Guid.NewGuid().ToString(),
-                            RelativePath = "DB_STORAGE",
-                            ContentType = attachmentFile.ContentType,
-                            CreatedAtUtc = DateTime.UtcNow,
-                            FileData = fileData,
-                            AttachmentType = "Citizen"
-                        };
+                            using var memoryStream = new MemoryStream();
+                            await f.CopyToAsync(memoryStream);
+                            byte[] fileData = memoryStream.ToArray();
 
-                        await ReportService.SaveAttachmentAsync(model.Id, attachment);
+                            var attachment = new ReportAttachment
+                            {
+                                Id = Guid.NewGuid(),
+                                ReportId = model.Id,
+                                OriginalFileName = f.FileName,
+                                StoredFileName = Guid.NewGuid().ToString(),
+                                RelativePath = "DB_STORAGE",
+                                ContentType = f.ContentType,
+                                CreatedAtUtc = DateTime.UtcNow,
+                                FileData = fileData,
+                                AttachmentType = "Citizen"
+                            };
+
+                            await ReportService.SaveAttachmentAsync(model.Id, attachment);
+                        }
                     }
 
                     TempData["Success"] = $"Gửi phản ánh thành công! Mã tra cứu của bạn là {model.TrackingCode}";

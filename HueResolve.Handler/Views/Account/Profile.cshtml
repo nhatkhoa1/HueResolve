@@ -1,0 +1,107 @@
+@model HueResolve.Models.Model.User
+@{
+    ViewData["Title"] = "Hồ sơ đơn vị";
+    string departmentName = User.FindFirstValue("DepartmentName") ?? "Không xác định";
+}
+
+<style>
+    .profile-card {
+        background: #ffffff;
+        border-radius: 20px;
+        border: 1px solid var(--border-color);
+        overflow: hidden;
+    }
+    .profile-header {
+        background: linear-gradient(135deg, var(--handler-primary) 0%, #7B61FF 100%);
+        height: 120px;
+        position: relative;
+    }
+    .avatar-wrapper {
+        position: absolute;
+        bottom: -40px;
+        left: 40px;
+        width: 100px;
+        height: 100px;
+        background: #ffffff;
+        border-radius: 50%;
+        padding: 5px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .info-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #94a3b8;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+    .info-value {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-main);
+        padding: 10px 15px;
+        background: #f8fafc;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+    }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold m-0" style="color: var(--text-main);">Hồ sơ Cán bộ & Đơn vị</h4>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="profile-card shadow-sm mb-4">
+            <div class="profile-header">
+                <div class="avatar-wrapper">
+                    <i class="fa-solid fa-building-shield" style="font-size: 3rem; color: var(--handler-primary);"></i>
+                </div>
+            </div>
+            <div class="p-4" style="margin-top: 40px;">
+                <h4 class="fw-bold text-dark mb-1">@Model.FullName</h4>
+                <div class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill mb-4 fw-bold">
+                    <i class="fa-solid fa-briefcase me-1"></i> Cán bộ xử lý
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="info-label">Tên tài khoản</div>
+                        <div class="info-value">@Model.Username</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-label">Đơn vị trực thuộc</div>
+                        <div class="info-value">@departmentName</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-label">Số điện thoại liên hệ</div>
+                        <div class="info-value">@(string.IsNullOrEmpty(Model.PhoneNumber) ? "Chưa cập nhật" : Model.PhoneNumber)</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-label">Ngày tham gia hệ thống</div>
+                        <div class="info-value">@Model.CreatedAtUtc.AddHours(7).ToString("dd/MM/yyyy")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="profile-card shadow-sm p-4 text-center">
+            <div class="mb-4">
+                <i class="fa-solid fa-shield-halved text-muted" style="font-size: 2.5rem; opacity: 0.3;"></i>
+            </div>
+            <h6 class="fw-bold text-dark mb-3">Lưu ý bảo mật</h6>
+            <p class="text-muted small text-start">
+                Là cán bộ xử lý thuộc biên chế của <strong>@departmentName</strong>, tài khoản của bạn được phân quyền riêng biệt để tiếp nhận và báo cáo kết quả các sự cố hiện trường nằm trong thẩm quyền của đơn vị.
+                <br /><br />
+                Vui lòng bảo mật thông tin đăng nhập cá nhân. Tuyệt đối không chia sẻ tài khoản cho người không có thẩm quyền. 
+                <br /><br />
+                <em>Ghi chú: Mọi hành động thao tác hệ thống (chuyển trạng thái, gửi báo cáo, tải minh chứng...) đều được lưu vết lịch sử truy cập tự động kèm theo danh tính người thao tác để phục vụ công tác tra soát.</em>
+            </p>
+        </div>
+    </div>
+</div>

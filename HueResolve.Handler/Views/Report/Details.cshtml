@@ -121,9 +121,9 @@
                     <span class="fw-bold text-muted small">Bấm để chọn hoặc kéo thả ảnh minh chứng vào đây</span>
                     <span class="text-muted" style="font-size: 0.7rem;">(Tự động tải lên sau khi chọn)</span>
                 </label>
-                <input type="file" name="file" id="fileInput" class="position-absolute inset-0 opacity-0 cursor-pointer" 
+                <input type="file" name="files" id="fileInput" class="position-absolute inset-0 opacity-0 cursor-pointer" 
                        style="top:0; left:0; width:100%; height:100%; cursor:pointer;"
-                       accept="image/*" required onchange="this.form.submit()" />
+                       accept="image/*,video/*" multiple required onchange="this.form.submit()" />
             </div>
         </form>
     }
@@ -134,15 +134,27 @@
         {
             @foreach (var img in citizenAttachments)
             {
-                string imageBase64 = "";
+                string fileBase64 = "";
                 if (img.FileData != null)
                 {
-                    imageBase64 = $"data:{img.ContentType};base64,{Convert.ToBase64String(img.FileData)}";
+                    fileBase64 = $"data:{img.ContentType};base64,{Convert.ToBase64String(img.FileData)}";
                 }
 
                 <div class="col-4 position-relative">
-                    <img src="@imageBase64" class="img-grid-item shadow-sm"
-                         onclick="viewImageModal('@imageBase64')" alt="Minh chứng từ người dân" />
+                    @if (img.ContentType.StartsWith("video/"))
+                    {
+                        <div class="position-relative w-100 h-100 shadow-sm" style="border-radius: 10px; overflow:hidden; cursor:pointer; background:#000; height:120px;" onclick="viewMediaModal('@fileBase64', true)">
+                            <video src="@fileBase64" style="width:100%;height:120px;object-fit:cover; pointer-events:none;"></video>
+                            <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="background: rgba(0,0,0,0.2);">
+                                <i class="fa-solid fa-play text-white" style="font-size: 2rem; opacity: 0.9;"></i>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <img src="@fileBase64" class="img-grid-item shadow-sm"
+                             onclick="viewMediaModal('@fileBase64', false)" alt="Minh chứng từ người dân" style="cursor: pointer;" />
+                    }
                 </div>
             }
         }
@@ -162,15 +174,39 @@
         {
             @foreach (var img in resultAttachments)
             {
-                string imageBase64 = "";
+                string fileBase64 = "";
                 if (img.FileData != null)
                 {
-                    imageBase64 = $"data:{img.ContentType};base64,{Convert.ToBase64String(img.FileData)}";
+                    fileBase64 = $"data:{img.ContentType};base64,{Convert.ToBase64String(img.FileData)}";
                 }
 
                 <div class="col-4 position-relative">
-                    <img src="@imageBase64" class="img-grid-item shadow-sm"
-                         onclick="viewImageModal('@imageBase64')" alt="Minh chứng kết quả xử lý" />
+                    @if (img.ContentType.StartsWith("video/"))
+                    {
+                        <div class="position-relative w-100 h-100 shadow-sm" style="border-radius: 10px; overflow:hidden; cursor:pointer; background:#000; height:120px;" onclick="viewMediaModal('@fileBase64', true)">
+                            <video src="@fileBase64" style="width:100%;height:120px;object-fit:cover; pointer-events:none;"></video>
+                            <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="background: rgba(0,0,0,0.2);">
+                                <i class="fa-solid fa-play text-white" style="font-size: 2rem; opacity: 0.9;"></i>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <img src="@fileBase64" class="img-grid-item shadow-sm"
+                             onclick="viewMediaModal('@fileBase64', false)" alt="Minh chứng kết quả xử lý" style="cursor: pointer;" />
+                    }
+                    
+                    @if (isEditable)
+                    {
+                        <form action="@Url.Action("DeleteAttachment", "Report")" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa minh chứng này?');">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="attachmentId" value="@img.Id" />
+                            <input type="hidden" name="reportId" value="@Model.Id" />
+                            <button type="submit" class="btn btn-danger btn-delete-img" title="Xóa">
+                                <i class="fa-solid fa-xmark" style="font-size: 0.7rem;"></i>
+                            </button>
+                        </form>
+                    }
                 </div>
             }
         }
@@ -299,18 +335,29 @@
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
-            <div class="modal-body p-0 text-center">
-                <img id="modalImg" src="" class="img-fluid rounded-4 shadow-lg" style="max-height: 85vh; border: 5px solid white;" />
+            <div class="modal-body p-0 text-center" id="modalMediaContainer">
+                <!-- Media will be injected here -->
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    function viewImageModal(src) {
-        document.getElementById('modalImg').src = src;
+    function viewMediaModal(src, isVideo) {
+        var container = document.getElementById('modalMediaContainer');
+        container.innerHTML = '';
+        if (isVideo) {
+            container.innerHTML = '<video src="' + src + '" class="img-fluid rounded-4 shadow-lg" controls autoplay style="max-height: 85vh; border: 5px solid white; background:#000;"></video>';
+        } else {
+            container.innerHTML = '<img src="' + src + '" class="img-fluid rounded-4 shadow-lg" style="max-height: 85vh; border: 5px solid white;" />';
+        }
         var myModal = new bootstrap.Modal(document.getElementById('imageLightbox'));
         myModal.show();
+        
+        // Dừng video khi đóng modal
+        document.getElementById('imageLightbox').addEventListener('hidden.bs.modal', function () {
+            container.innerHTML = '';
+        });
     }
 </script>
 

@@ -25,8 +25,28 @@
                         </div>
                     }
 
-                    <form action="@Url.Action("EditProfile")" method="post">
+                    <form action="@Url.Action("EditProfile")" method="post" enctype="multipart/form-data">
                         @Html.AntiForgeryToken()
+
+                        <div class="text-center mb-4">
+                            <div class="position-relative d-inline-block">
+                                @if (!string.IsNullOrEmpty(Model.AvatarPath))
+                                {
+                                    <img src="@Model.AvatarPath" alt="Avatar" class="rounded-circle object-fit-cover shadow-sm border" style="width: 120px; height: 120px;" id="avatarPreview" />
+                                }
+                                else
+                                {
+                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm border" style="width: 120px; height: 120px;" id="avatarPlaceholder">
+                                        <i class="fa-solid fa-user" style="font-size: 3rem;"></i>
+                                    </div>
+                                    <img src="" alt="Avatar" class="rounded-circle object-fit-cover shadow-sm border d-none" style="width: 120px; height: 120px;" id="avatarPreview" />
+                                }
+                                <label for="avatarInput" class="position-absolute bottom-0 end-0 bg-white text-primary rounded-circle shadow-sm border p-2" style="cursor: pointer;" title="Đổi ảnh đại diện">
+                                    <i class="fa-solid fa-camera"></i>
+                                </label>
+                            </div>
+                            <input type="file" id="avatarInput" name="avatarFile" class="d-none" accept="image/*" onchange="previewAvatar(event)" />
+                        </div>
 
                         <div class="mb-4">
                             <label class="form-label fw-bold small text-dark">Họ và Tên <span class="text-danger">*</span></label>
@@ -76,3 +96,25 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        function previewAvatar(event) {
+            const input = event.target;
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('avatarPreview');
+                    const placeholder = document.getElementById('avatarPlaceholder');
+                    
+                    preview.src = e.target.result;
+                    preview.classList.remove('d-none');
+                    if (placeholder) {
+                        placeholder.classList.add('d-none');
+                    }
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+}

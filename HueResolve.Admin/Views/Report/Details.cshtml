@@ -123,10 +123,19 @@
                         @foreach (var att in citizenAttachments)
                         {
                             string base64Data = att.FileData != null ? $"data:{att.ContentType};base64,{Convert.ToBase64String(att.FileData)}" : "/img/no-image.png";
+                            bool isVideo = att.ContentType != null && att.ContentType.StartsWith("video/");
 
                             <div class="gallery-thumb shadow-sm" onclick="openLightbox(@attIdx)"
-                                 style="width:110px;height:110px;border-radius:10px;border:1px solid var(--border-color); overflow:hidden;cursor:pointer;position:relative;background:#f1f5f9;flex-shrink:0;">
-                                <img src="@base64Data" alt="@att.OriginalFileName" style="width:100%;height:100%;object-fit:cover;" />
+                                 style="width:110px;height:110px;border-radius:10px;border:1px solid var(--border-color); overflow:hidden;cursor:pointer;position:relative;background:#000;flex-shrink:0; display:flex; align-items:center; justify-content:center;">
+                                @if (isVideo)
+                                {
+                                    <video src="@base64Data" style="width:100%;height:100%;object-fit:cover;"></video>
+                                    <i class="fa-solid fa-play position-absolute text-white" style="font-size: 2rem; opacity: 0.8; pointer-events:none;"></i>
+                                }
+                                else
+                                {
+                                    <img src="@base64Data" alt="@att.OriginalFileName" style="width:100%;height:100%;object-fit:cover;" />
+                                }
                                 <div class="thumb-overlay">
                                     <i class="fa-solid fa-magnifying-glass-plus" style="color:#fff;font-size:1.2rem;"></i>
                                 </div>
@@ -153,10 +162,19 @@
                         @foreach (var att in resultAttachments)
                         {
                             string base64Data = att.FileData != null ? $"data:{att.ContentType};base64,{Convert.ToBase64String(att.FileData)}" : "/img/no-image.png";
+                            bool isVideo = att.ContentType != null && att.ContentType.StartsWith("video/");
 
                             <div class="gallery-thumb shadow-sm" onclick="openLightbox(@attIdx)"
-                                 style="width:110px;height:110px;border-radius:10px;border:1px solid var(--border-color); overflow:hidden;cursor:pointer;position:relative;background:#f1f5f9;flex-shrink:0;">
-                                <img src="@base64Data" alt="@att.OriginalFileName" style="width:100%;height:100%;object-fit:cover;" />
+                                 style="width:110px;height:110px;border-radius:10px;border:1px solid var(--border-color); overflow:hidden;cursor:pointer;position:relative;background:#000;flex-shrink:0; display:flex; align-items:center; justify-content:center;">
+                                @if (isVideo)
+                                {
+                                    <video src="@base64Data" style="width:100%;height:100%;object-fit:cover;"></video>
+                                    <i class="fa-solid fa-play position-absolute text-white" style="font-size: 2rem; opacity: 0.8; pointer-events:none;"></i>
+                                }
+                                else
+                                {
+                                    <img src="@base64Data" alt="@att.OriginalFileName" style="width:100%;height:100%;object-fit:cover;" />
+                                }
                                 <div class="thumb-overlay">
                                     <i class="fa-solid fa-magnifying-glass-plus" style="color:#fff;font-size:1.2rem;"></i>
                                 </div>
@@ -247,14 +265,20 @@
                         <input type="hidden" name="id" value="@Model.Id" />
 
                         <div class="mb-3">
-                            <label class="form-label" style="font-size:0.78rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;">Đơn vị tiếp nhận <span class="text-danger">*</span></label>
-                            <select name="departmentId" class="form-select shadow-sm" style="font-size:0.85rem;border-radius:8px;" required>
+                            <label class="form-label d-flex justify-content-between align-items-center" style="font-size:0.78rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;">
+                                <span>Đơn vị tiếp nhận <span class="text-danger">*</span></span>
+                                <button type="button" class="btn btn-sm btn-outline-info border-0 p-0 fw-bold" id="btnAiSuggest" style="font-size:0.7rem;">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i> Gợi ý (AI)
+                                </button>
+                            </label>
+                            <select name="departmentId" id="departmentId" class="form-select shadow-sm" style="font-size:0.85rem;border-radius:8px;" required>
                                 <option value="">-- Chọn đơn vị --</option>
                                 @foreach (var dept in departments)
                                 {
                                     <option value="@dept.Id">@dept.Name</option>
                                 }
                             </select>
+                            <small id="aiMessage" class="text-success d-none mt-1 fw-bold" style="font-size:0.7rem;"><i class="fa-solid fa-check"></i> Đã chọn gợi ý từ AI.</small>
                         </div>
 
                         <div class="mb-3">
@@ -392,11 +416,13 @@
             {
                     /// Chuyển đổi mảng byte sang chuỗi Base64
                     string jsBase64 = att.FileData != null ? $"data:{att.ContentType};base64,{Convert.ToBase64String(att.FileData)}" : "/img/no-image.png";
+                    bool isVideo = att.ContentType != null && att.ContentType.StartsWith("video/");
                     <text>
                     {
                         /// Sử dụng Html.Raw để trình duyệt không encode chuỗi Base64
                         src: "@Html.Raw(jsBase64)",
-                        name: "@Html.Raw(att.OriginalFileName)"
+                        name: "@Html.Raw(att.OriginalFileName)",
+                        isVideo: @(isVideo ? "true" : "false")
                     },
                     </text>
             }
@@ -428,10 +454,19 @@
             const c = document.getElementById('lb-content');
             c.innerHTML = '';
 
-            const img = document.createElement('img');
-            img.src = att.src;
-            img.style.cssText = 'max-width:90vw;max-height:80vh;object-fit:contain;border-radius:8px;box-shadow: 0 10px 25px rgba(0,0,0,0.5);';
-            c.appendChild(img);
+            if (att.isVideo) {
+                const vid = document.createElement('video');
+                vid.src = att.src;
+                vid.controls = true;
+                vid.autoplay = true;
+                vid.style.cssText = 'max-width:90vw;max-height:80vh;object-fit:contain;border-radius:8px;box-shadow: 0 10px 25px rgba(0,0,0,0.5); background: #000;';
+                c.appendChild(vid);
+            } else {
+                const img = document.createElement('img');
+                img.src = att.src;
+                img.style.cssText = 'max-width:90vw;max-height:80vh;object-fit:contain;border-radius:8px;box-shadow: 0 10px 25px rgba(0,0,0,0.5);';
+                c.appendChild(img);
+            }
 
             document.getElementById('lb-caption').textContent = att.name;
             document.getElementById('lb-counter').textContent = (_lbIdx + 1) + ' / ' + _attachments.length;
@@ -522,5 +557,94 @@
             
             modal.show();
         }
+
+        // Script xử lý gọi AI gợi ý đơn vị (Bản nâng cấp UI)
+        const btnAi = document.getElementById('btnAiSuggest');
+        if (btnAi) {
+            btnAi.addEventListener('click', function() {
+                const btn = this;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Đang phân tích...';
+                btn.disabled = true;
+                
+                // Xóa gợi ý cũ nếu có
+                const oldPanel = document.getElementById('aiSuggestPanel');
+                if (oldPanel) oldPanel.remove();
+
+                fetch('@Url.Action("SuggestDepartmentAi", "Report", new { id = Model.Id })')
+                    .then(response => response.json())
+                    .then(data => {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                        
+                        if (data.success && data.suggestions && data.suggestions.length > 0) {
+                            // Tạo Panel gợi ý đẹp mắt
+                            let html = `
+                                <div id="aiSuggestPanel" class="mt-3 p-3 border rounded-4 bg-light shadow-sm" style="animation: slideDown 0.3s ease-out;">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="fw-bold text-primary" style="font-size:0.75rem;"><i class="fa-solid fa-robot me-1"></i> TOP GỢI Ý TỪ AI</span>
+                                        <button type="button" class="btn-close" style="font-size:0.5rem;" onclick="this.parentElement.parentElement.remove()"></button>
+                                    </div>
+                                    <div class="list-group list-group-flush bg-transparent">
+                            `;
+                            
+                            data.suggestions.forEach((s, index) => {
+                                const confidencePercent = Math.round(s.confidence * 100);
+                                html += `
+                                    <button type="button" class="list-group-item list-group-item-action border-0 px-0 py-2 bg-transparent d-flex align-items-start gap-2" 
+                                            onclick="selectAiDept(${s.id}, '${s.name}')">
+                                        <div class="badge ${index === 0 ? 'bg-success' : 'bg-secondary'} rounded-pill" style="font-size:0.6rem;">${confidencePercent}%</div>
+                                        <div class="flex-fill">
+                                            <div class="fw-bold text-dark" style="font-size:0.8rem;">${s.name}</div>
+                                            <div class="text-muted" style="font-size:0.7rem; line-height:1.2;">${s.reason}</div>
+                                        </div>
+                                        <i class="fa-solid fa-chevron-right text-muted mt-1" style="font-size:0.7rem;"></i>
+                                    </button>
+                                `;
+                            });
+                            
+                            html += `</div></div>`;
+                            
+                            // Chèn panel vào sau dropdown
+                            document.getElementById('departmentId').parentElement.insertAdjacentHTML('afterend', html);
+                        } else {
+                            alert("AI không tìm thấy gợi ý phù hợp.");
+                        }
+                    })
+                    .catch(err => {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                        console.error(err);
+                    });
+            });
+        }
+
+        function selectAiDept(id, name) {
+            const select = document.getElementById('departmentId');
+            select.value = id;
+            
+            // Hiệu ứng highlight
+            select.style.borderColor = "#10b981";
+            select.style.boxShadow = "0 0 0 0.25rem rgba(16, 185, 129, 0.25)";
+            
+            const aiMsg = document.getElementById('aiMessage');
+            aiMsg.innerHTML = '<i class="fa-solid fa-check"></i> Đã chọn theo gợi ý: ' + name;
+            aiMsg.classList.remove('d-none');
+            
+            // Xóa panel sau khi chọn
+            document.getElementById('aiSuggestPanel').remove();
+            
+            setTimeout(() => {
+                select.style.borderColor = "";
+                select.style.boxShadow = "";
+            }, 1500);
+        }
     </script>
+    
+    <style>
+        @@keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 }

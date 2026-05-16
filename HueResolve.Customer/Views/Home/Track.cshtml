@@ -8,6 +8,7 @@
         "DangXuLy" => ("bg-warning text-dark", "Đang xử lý thực địa"),
         "HoanThanh" => ("bg-success text-white", "Đã hoàn thành"),
         "TuChoi" => ("bg-danger text-white", "Từ chối xử lý"),
+        "ChoDuyetKq" => ("bg-info bg-opacity-10 text-info border border-info", "Chờ kết quả"),
         _ => ("bg-secondary text-white", Model.Status)
     };
 }
@@ -60,9 +61,20 @@
                         {
                             var base64 = img.FileData != null ? Convert.ToBase64String(img.FileData) : "";
                             var imgSrc = $"data:{img.ContentType};base64,{base64}";
+                            bool isVideo = img.ContentType != null && img.ContentType.StartsWith("video/");
                             <div class="col-6 col-md-3">
-                                <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100" style="cursor: pointer;" onclick="openImageModal('@imgSrc')">
-                                    <img src="@imgSrc" alt="Ảnh hiện trường" class="img-fluid w-100" style="height: 150px; object-fit: cover; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" />
+                                <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 position-relative" style="cursor: pointer; background: #000;" onclick="openMediaModal('@imgSrc', @(isVideo ? "true" : "false"))">
+                                    @if (isVideo)
+                                    {
+                                        <video src="@imgSrc" class="img-fluid w-100" style="height: 150px; object-fit: cover; pointer-events:none;"></video>
+                                        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="background: rgba(0,0,0,0.2);">
+                                            <i class="fa-solid fa-play text-white" style="font-size: 2rem; opacity: 0.9;"></i>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <img src="@imgSrc" alt="Ảnh hiện trường" class="img-fluid w-100" style="height: 150px; object-fit: cover; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" />
+                                    }
                                 </div>
                             </div>
                         }
@@ -98,9 +110,20 @@
                                 {
                                     var base64 = img.FileData != null ? Convert.ToBase64String(img.FileData) : "";
                                     var imgSrc = $"data:{img.ContentType};base64,{base64}";
+                                    bool isVideo = img.ContentType != null && img.ContentType.StartsWith("video/");
                                     <div class="col-6 col-md-4 col-lg-3">
-                                        <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100" style="cursor: pointer;" onclick="openImageModal('@imgSrc')">
-                                            <img src="@imgSrc" alt="Ảnh kết quả" class="img-fluid w-100" style="height: 180px; object-fit: cover; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" />
+                                        <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 position-relative" style="cursor: pointer; background: #000;" onclick="openMediaModal('@imgSrc', @(isVideo ? "true" : "false"))">
+                                            @if (isVideo)
+                                            {
+                                                <video src="@imgSrc" class="img-fluid w-100" style="height: 180px; object-fit: cover; pointer-events:none;"></video>
+                                                <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="background: rgba(0,0,0,0.2);">
+                                                    <i class="fa-solid fa-play text-white" style="font-size: 2rem; opacity: 0.9;"></i>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <img src="@imgSrc" alt="Ảnh kết quả" class="img-fluid w-100" style="height: 180px; object-fit: cover; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" />
+                                            }
                                         </div>
                                     </div>
                                 }
@@ -148,21 +171,28 @@
             <div class="modal-header border-0 pb-0 justify-content-end">
                 <button type="button" class="btn-close btn-close-white fs-4" data-bs-dismiss="modal" aria-label="Close" style="filter: invert(1);"></button>
             </div>
-            <div class="modal-body text-center pt-0">
-                <img id="modalPreviewImage" src="" class="img-fluid rounded-4 shadow-lg" alt="Phóng to ảnh" style="max-height: 85vh;" />
+            <div class="modal-body text-center pt-0" id="modalMediaContainer">
+                <!-- Media will be injected here -->
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    /* Hàm Javascript xử lý việc mở ảnh lên Modal bằng Bootstrap 5 */
-    function openImageModal(imgSource) {
-        /* Gán đường dẫn ảnh Base64 vào thẻ img trong Modal */
-        document.getElementById('modalPreviewImage').src = imgSource;
-
-        /* Khởi tạo và hiển thị Modal */
-        var imageModal = new bootstrap.Modal(document.getElementById('imageViewerModal'));
-        imageModal.show();
+    function openMediaModal(src, isVideo) {
+        var container = document.getElementById('modalMediaContainer');
+        container.innerHTML = '';
+        if (isVideo) {
+            container.innerHTML = '<video src="' + src + '" class="img-fluid rounded-4 shadow-lg" controls autoplay style="max-height: 85vh; background: #000;"></video>';
+        } else {
+            container.innerHTML = '<img src="' + src + '" class="img-fluid rounded-4 shadow-lg" alt="Phóng to ảnh" style="max-height: 85vh;" />';
+        }
+        var myModal = new bootstrap.Modal(document.getElementById('imageViewerModal'));
+        myModal.show();
+        
+        // Dừng video khi đóng modal
+        document.getElementById('imageViewerModal').addEventListener('hidden.bs.modal', function () {
+            container.innerHTML = '';
+        });
     }
 </script>

@@ -24,6 +24,23 @@
                     <h5 class="m-0 fw-bold"><i class="fa-solid fa-id-card me-2"></i>Thông Tin Chi Tiết</h5>
                 </div>
                 <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        @if (!string.IsNullOrEmpty(Model.AvatarPath))
+                        {
+                            <img src="@Model.AvatarPath" alt="Avatar" class="rounded-circle object-fit-cover shadow-sm border" style="width: 120px; height: 120px;" />
+                        }
+                        else
+                        {
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm border mx-auto" style="width: 120px; height: 120px;">
+                                <i class="fa-solid fa-user" style="font-size: 3rem;"></i>
+                            </div>
+                        }
+                        <h5 class="fw-bold mt-3 text-dark mb-1">@Model.FullName</h5>
+                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill">Tài khoản Công dân</span>
+                    </div>
+
+                    <hr class="mb-4" />
+
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <label class="form-label fw-bold small text-muted">Họ và Tên</label>

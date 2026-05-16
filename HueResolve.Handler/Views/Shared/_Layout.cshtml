@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
@@ -11,14 +11,15 @@
 
     <style>
         :root {
-            --sidebar-width: 260px;
-            --header-height: 70px;
-            --handler-bg: #f8fafc;
-            --handler-indigo: #4f46e5; /* Màu chủ đạo của Handler */
-            --handler-indigo-hover: #4338ca;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --border-color: #e2e8f0;
+            --sidebar-width: 280px;
+            --header-height: 80px;
+            --handler-bg: #f4f7fe;
+            --handler-primary: #4318FF; /* Vibrant Modern Blue */
+            --handler-primary-hover: #3311DB;
+            --handler-indigo: #4318FF; /* Keep for backwards compatibility */
+            --text-main: #2B3674;
+            --text-muted: #A3AED0;
+            --border-color: #E9EDF7;
         }
 
         body {
@@ -73,6 +74,62 @@
         $("#menu-toggle").click(function(e) {
             e.preventDefault();
             $("#wrapper").toggleClass("toggled");
+        });
+
+        async function loadHandlerNotifications() {
+            try {
+                const response = await fetch('/Dashboard/GetNotifications');
+                if (!response.ok) return;
+                const data = await response.json();
+                
+                const badge = document.getElementById('handlerNotifBadge');
+                const count = document.getElementById('handlerNotifCount');
+                const list = document.getElementById('handlerNotifList');
+                const empty = document.getElementById('handlerNotifEmpty');
+
+                if (count) count.innerText = data.count;
+                
+                if (data.count > 0) {
+                    if (badge) {
+                        badge.innerText = data.count;
+                        badge.style.display = 'inline-block';
+                    }
+                    if (empty) empty.style.display = 'none';
+                    if (list) {
+                        list.innerHTML = data.items.map(item => `
+                            <li>
+                                <a class="dropdown-item rounded-3 py-2 px-3 small border-bottom" href="/Report/Details/${item.id}">
+                                    <div class="fw-bold text-dark mb-1">
+                                        <i class="fa-solid fa-circle text-primary" style="font-size: 8px;"></i>
+                                        ${item.title}
+                                    </div>
+                                    <div class="text-muted text-truncate" style="max-width: 280px;">${item.note}</div>
+                                    <div class="text-primary mt-1" style="font-size: 0.7rem;"><i class="fa-regular fa-clock me-1"></i>${item.timeAgo}</div>
+                                </a>
+                            </li>
+                        `).join('');
+                    }
+                } else {
+                    if (badge) badge.style.display = 'none';
+                    if (empty) {
+                        empty.style.display = 'block';
+                        empty.innerHTML = `
+                            <i class="fa-regular fa-bell-slash fs-4 mb-2"></i>
+                            <div class="small">Không có thông báo mới</div>
+                        `;
+                    }
+                    if (list) list.innerHTML = '';
+                }
+            } catch (error) {
+                console.error('Lỗi tải thông báo:', error);
+            }
+        }
+
+        $(document).ready(function() {
+            if (document.getElementById('handlerNotifBadge')) {
+                loadHandlerNotifications();
+                setInterval(loadHandlerNotifications, 60000);
+            }
         });
     </script>
     @await RenderSectionAsync("Scripts", required: false)

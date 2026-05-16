@@ -44,8 +44,101 @@
                 border-color: #1d4ed8;
             }
 
+        .fab-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1050;
+        }
+
+        .fab-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #2563eb;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+            transition: transform 0.2s, background-color 0.2s;
+            text-decoration: none;
+        }
+
+        .fab-button:hover {
+            transform: scale(1.05);
+            background-color: #1d4ed8;
+            color: white;
+        }
+
         main {
             flex: 1;
+        }
+
+        /* Mobile Navbar Fixes */
+        .notif-bell-btn {
+            width: 40px !important;
+            height: 40px !important;
+            padding: 0 !important;
+            border-radius: 50% !important;
+            display: inline-block !important;
+            position: relative !important;
+            vertical-align: middle;
+        }
+
+        .notif-badge {
+            position: absolute !important;
+            top: 0 !important;
+            right: 0 !important;
+            transform: translate(25%, -25%) !important;
+            font-size: 0.65rem !important;
+            padding: 0.35em 0.5em !important;
+            border: 2px solid white !important;
+            z-index: 10 !important;
+        }
+
+        @@media (max-width: 991.98px) {
+            .notif-bell-btn {
+                width: 100% !important;
+                height: 48px !important;
+                padding: 0 !important;
+                border-radius: 8px !important;
+                display: flex !important;
+                background-color: transparent !important;
+                box-shadow: none !important;
+            }
+            .notif-bell-btn:hover {
+                background-color: #f1f5f9 !important;
+            }
+            .notif-badge {
+                position: static !important;
+                transform: none !important;
+                margin-left: auto !important;
+                border: none !important;
+                margin-right: 16px !important;
+            }
+            .dropdown-menu-mobile {
+                position: static !important;
+                width: 100% !important;
+                max-width: none !important;
+                transform: none !important;
+                box-shadow: none !important;
+                border: 1px solid #e2e8f0 !important;
+                margin-top: 8px !important;
+                margin-bottom: 8px !important;
+            }
+            .profile-toggle-btn {
+                width: 100%;
+                padding: 10px 16px !important;
+                border-radius: 8px !important;
+            }
+            .profile-toggle-btn:hover {
+                background-color: #f1f5f9 !important;
+            }
+            .profile-toggle-btn img, .profile-toggle-btn .bg-primary {
+                margin-right: 8px;
+            }
         }
     </style>
 </head>
@@ -71,27 +164,31 @@
                     </li>
                 </ul>
 
-                <div class="d-flex align-items-center gap-3">
+                <div class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-2 gap-lg-3 mt-3 mt-lg-0">
                     @if (User.Identity != null && User.Identity.IsAuthenticated)
                     {
-                        <a href="@Url.Action("Create", "Report")" class="btn btn-primary fw-bold rounded-pill px-4 shadow-sm">
+                        <a href="@Url.Action("Create", "Report")" class="btn btn-primary fw-bold rounded-pill px-4 shadow-sm d-none d-lg-block">
                             <i class="fa-solid fa-plus me-1"></i> Gửi phản ánh
                         </a>
 
                         <!-- ═══ CHUÔNG THÔNG BÁO ═══ -->
                         <div class="dropdown" id="notifDropdown">
-                            <button class="btn btn-light rounded-circle position-relative shadow-sm border-0"
+                            <button class="btn btn-light position-relative shadow-sm border-0 notif-bell-btn p-0"
                                     id="notifBell"
-                                    style="width:40px;height:40px;padding:0;"
                                     data-bs-toggle="dropdown"
                                     aria-expanded="false"
                                     onclick="loadNotifications()">
-                                <i class="fa-solid fa-bell" style="color:#475569;font-size:1rem;"></i>
-                                <span id="notifBadge"
-                                      class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                                      style="font-size:.6rem;display:none;min-width:18px;">0</span>
+                                <div class="d-flex align-items-center w-100 h-100 position-relative">
+                                    <div class="d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 100%;">
+                                        <i class="fa-solid fa-bell" style="color:#475569;font-size:1.1rem;"></i>
+                                    </div>
+                                    <span class="d-lg-none ms-2 fw-medium text-secondary flex-grow-1 text-start">Thông báo</span>
+                                    <span id="notifBadge"
+                                          class="badge rounded-pill bg-danger notif-badge"
+                                          style="display:none;min-width:18px;">0</span>
+                                </div>
                             </button>
-                            <div class="dropdown-menu dropdown-menu-end shadow border-0 p-0"
+                            <div class="dropdown-menu dropdown-menu-end shadow border-0 p-0 dropdown-menu-mobile"
                                  id="notifPanel"
                                  style="width:340px;border-radius:16px;overflow:hidden;">
                                 <!-- Header -->
@@ -121,13 +218,29 @@
                         <!-- ═══ END CHUÔNG ═══ -->
 
                         <div class="dropdown">
-                            <a class="nav-link dropdown-toggle text-dark fw-bold d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown">
-                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
-                                    <i class="fa-solid fa-user"></i>
-                                </div>
+                            <a class="nav-link dropdown-toggle text-dark fw-bold d-flex align-items-center gap-2 profile-toggle-btn" href="#" role="button" data-bs-toggle="dropdown">
+                                @{
+                                    var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                                    string userAvatar = "";
+                                    if (Guid.TryParse(userIdStr, out Guid uid))
+                                    {
+                                        var dbUser = await HueResolve.Business.Services.UserService.GetUserByIdAsync(uid);
+                                        userAvatar = dbUser?.AvatarPath ?? "";
+                                    }
+                                }
+                                @if (!string.IsNullOrEmpty(userAvatar))
+                                {
+                                    <img src="@userAvatar" alt="Avatar" class="rounded-circle object-fit-cover shadow-sm border" style="width: 35px; height: 35px;" />
+                                }
+                                else
+                                {
+                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
+                                        <i class="fa-solid fa-user"></i>
+                                    </div>
+                                }
                                 @User.Identity.Name
                             </a>
-                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2" style="border-radius: 12px;">
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2 dropdown-menu-mobile" style="border-radius: 12px;">
                                 <li><a class="dropdown-item py-2" href="@Url.Action("Profile", "Account")"><i class="fa-solid fa-user me-2 text-muted"></i>Thông tin cá nhân</a></li>
                                 <li><a class="dropdown-item py-2" href="@Url.Action("MyReports", "Report")"><i class="fa-solid fa-clock-rotate-left me-2 text-muted"></i>Lịch sử của tôi</a></li>
                                 <li><hr class="dropdown-divider"></li>
@@ -243,7 +356,7 @@
                     count.innerText = data.count;
                     if (data.count > 0) {
                         badge.innerText = data.count;
-                        badge.style.display = 'block';
+                        badge.style.display = 'inline-block';
                     } else {
                         badge.style.display = 'none';
                     }
@@ -267,5 +380,14 @@
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)
+
+    @if (User.Identity != null && User.Identity.IsAuthenticated)
+    {
+        <div class="fab-container d-lg-none">
+            <a href="@Url.Action("Create", "Report")" class="fab-button shadow-lg" title="Gửi phản ánh">
+                <i class="fa-solid fa-plus"></i>
+            </a>
+        </div>
+    }
 </body>
 </html>

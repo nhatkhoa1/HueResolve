@@ -137,14 +137,18 @@ namespace HueResolve.Business.Services
         /// <summary>
         /// Cập nhật thông tin cá nhân người dùng.
         /// </summary>
-        public static async Task<bool> UpdateUserInfoAsync(Guid userId, string fullName, string? phoneNumber, string? addressText)
+        public static async Task<bool> UpdateUserInfoAsync(Guid userId, string fullName, string? phoneNumber, string? addressText, string? avatarPath = null)
         {
+            var existingUser = await _userRepository.GetByIdAsync(userId);
+            if (existingUser == null) return false;
+
             var user = new User
             {
                 Id = userId,
                 FullName = fullName,
                 PhoneNumber = phoneNumber,
-                AddressText = addressText
+                AddressText = addressText,
+                AvatarPath = avatarPath ?? existingUser.AvatarPath
             };
             int result = await _userRepository.UpdateAsync(user);
             return result > 0;

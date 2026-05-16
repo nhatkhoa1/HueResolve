@@ -18,22 +18,32 @@
         <button class="btn btn-light border-0 rounded-circle me-3" id="menu-toggle">
             <i class="fa-solid fa-bars-staggered"></i>
         </button>
-        <div class="fw-medium text-muted">@DateTime.Now.ToString("dddd, dd MMMM yyyy")</div>
+        <div class="fw-bold text-secondary" style="color: var(--text-main) !important;">
+            @DateTime.Now.ToString("dddd, dd/MM/yyyy", new System.Globalization.CultureInfo("vi-VN"))
+        </div>
     </div>
 
     <div class="d-flex align-items-center gap-3">
         <div class="dropdown">
-            <button class="btn btn-light border-0 rounded-circle position-relative" data-bs-toggle="dropdown">
-                <i class="fa-solid fa-bell text-muted"></i>
-                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white" style="font-size: 0.6rem;">
-                    3
+            <button class="btn btn-light border-0 rounded-circle position-relative p-2" data-bs-toggle="dropdown" style="background: #f4f7fe; color: var(--handler-primary);" onclick="loadHandlerNotifications()">
+                <i class="fa-solid fa-bell fs-5"></i>
+                <span id="handlerNotifBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white" style="font-size: 0.65rem; display: none;">
+                    0
                 </span>
             </button>
-            <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-4 p-2 mt-3" style="width: 300px;">
-                <li class="dropdown-header fw-bold">Thông báo mới</li>
+            <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-4 p-2 mt-3" style="width: 320px;">
+                <li class="dropdown-header fw-bold d-flex justify-content-between align-items-center">
+                    <span>Thông báo mới</span>
+                    <span class="badge bg-primary rounded-pill" id="handlerNotifCount">0</span>
+                </li>
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item rounded-3 py-2 small" href="#">Có phản ánh mới từ Ban điều hành</a></li>
-                <li><a class="dropdown-item rounded-3 py-2 small" href="#">Yêu cầu xử lý lại phản ánh #1023</a></li>
+                <div id="handlerNotifList">
+                    <!-- Notifications will be loaded here -->
+                </div>
+                <li id="handlerNotifEmpty" class="text-center p-3 text-muted">
+                    <i class="fa-regular fa-bell-slash fs-4 mb-2"></i>
+                    <div class="small">Đang tải thông báo...</div>
+                </li>
             </ul>
         </div>
 

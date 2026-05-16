@@ -115,5 +115,24 @@ namespace HueResolve.Handler.Controllers
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Login", "Account");
         }
+
+        /// <summary>
+        /// GET: /Account/Profile
+        /// Hiển thị hồ sơ cá nhân và đơn vị của Handler.
+        /// </summary>
+        [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Handler")]
+        [HttpGet]
+        public async Task<IActionResult> Profile()
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdStr, out Guid userId))
+                return RedirectToAction("Login");
+
+            var user = await UserService.GetUserByIdAsync(userId);
+            if (user == null)
+                return RedirectToAction("Login");
+
+            return View(user);
+        }
     }
 }

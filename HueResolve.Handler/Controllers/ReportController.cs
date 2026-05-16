@@ -80,6 +80,38 @@ namespace HueResolve.Handler.Controllers
         }
 
         /// <summary>
+        /// GET: /Report/History
+        /// Lịch sử xử lý: hiển thị các phản ánh Đã hoàn thành hoặc Bị từ chối.
+        /// </summary>
+        public async Task<IActionResult> History(DateTime? fromDate, DateTime? toDate, string? search, int page = 1)
+        {
+            int departmentId = GetMyDepartmentId();
+            if (departmentId == -1) return RedirectToAction("Login", "Account");
+
+            if (page < 1) page = 1;
+
+            var allReports = await ReportService.GetAllReportsAsync(null, null, search);
+            var myHistory = allReports
+                .Where(r => r.AssignedDepartmentId == departmentId && (r.Status == "HoanThanh" || r.Status == "TuChoi"))
+                .Where(r => (!fromDate.HasValue || r.CreatedAtUtc.AddHours(7).Date >= fromDate.Value.Date) &&
+                            (!toDate.HasValue || r.CreatedAtUtc.AddHours(7).Date <= toDate.Value.Date))
+                .OrderByDescending(r => r.CreatedAtUtc)
+                .ToList();
+
+            int totalCount = myHistory.Count;
+            var paged = myHistory.Skip((page - 1) * PageSize).Take(PageSize).ToList();
+
+            ViewBag.CurrentSearch = search;
+            ViewBag.FromDate = fromDate;
+            ViewBag.ToDate = toDate;
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = (int)Math.Ceiling((double)totalCount / PageSize);
+            ViewBag.TotalCount = totalCount;
+
+            return View(paged);
+        }
+
+        /// <summary>
         /// GET: /Report/Details/{id}
         /// Xem chi tiết phản ánh, Timeline lịch sử và form cập nhật trạng thái.
         /// Kiểm tra an ninh: nếu phản ánh không thuộc đơn vị của Handler thì trả về 403 Forbidden.
@@ -196,7 +228,7 @@ namespace HueResolve.Handler.Controllers
         /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UploadAttachment(Guid reportId, IFormFile file)
+        public async Task<IActionResult> UploadAttachment(Guid reportId, List<IFormFile> files)
         {
             int departmentId = GetMyDepartmentId();
             if (departmentId == -1) return RedirectToAction("Login", "Account");
@@ -205,49 +237,67 @@ namespace HueResolve.Handler.Controllers
             if (report == null || report.AssignedDepartmentId != departmentId)
                 return Forbid();
 
-            if (file == null || file.Length == 0)
+            if (files == null || files.Count == 0)
             {
                 TempData["Error"] = "Vui lòng chọn file để tải lên.";
                 return RedirectToAction("Details", new { id = reportId });
             }
 
-            /// Giới hạn 5MB
-            if (file.Length > 5 * 1024 * 1024)
+            var allowedTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/webp", "video/mp4", "video/quicktime" };
+            int newImgCount = 0, newVidCount = 0;
+            
+            foreach (var f in files)
             {
-                TempData["Error"] = "File vượt quá giới hạn 5MB.";
-                return RedirectToAction("Details", new { id = reportId });
+                if (f.ContentType.StartsWith("image/")) newImgCount++;
+                else if (f.ContentType.StartsWith("video/")) newVidCount++;
+                
+                if (!allowedTypes.Contains(f.ContentType))
+                {
+                    TempData["Error"] = "Có file định dạng không được hỗ trợ.";
+                    return RedirectToAction("Details", new { id = reportId });
+                }
+                if (f.Length > 5 * 1024 * 1024)
+                {
+                    TempData["Error"] = "Có file vượt quá giới hạn 5MB.";
+                    return RedirectToAction("Details", new { id = reportId });
+                }
             }
 
-            /// Chỉ chấp nhận ảnh và video
-            var allowedTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/webp", "video/mp4", "video/quicktime" };
-            if (!allowedTypes.Contains(file.ContentType))
+            var existingAttachments = await ReportService.GetAttachmentsAsync(reportId);
+            var resultAttachments = existingAttachments.Where(a => a.AttachmentType == "Result").ToList();
+            int currentImgCount = resultAttachments.Count(a => a.ContentType.StartsWith("image/"));
+            int currentVidCount = resultAttachments.Count(a => a.ContentType.StartsWith("video/"));
+
+            if (currentImgCount + newImgCount > 3 || currentVidCount + newVidCount > 1)
             {
-                TempData["Error"] = "Định dạng file không được hỗ trợ.";
+                TempData["Error"] = "Cán bộ chỉ được tải lên tối đa 3 ảnh và 1 video cho kết quả xử lý.";
                 return RedirectToAction("Details", new { id = reportId });
             }
 
             try
             {
-                /// Đọc file thành mảng byte để lưu thẳng vào DB
-                using var memoryStream = new MemoryStream();
-                await file.CopyToAsync(memoryStream);
-                byte[] fileData = memoryStream.ToArray();
-
-                var attachment = new HueResolve.Models.Model.ReportAttachment
+                foreach (var file in files)
                 {
-                    Id = Guid.NewGuid(),
-                    ReportId = reportId,
-                    OriginalFileName = file.FileName,
-                    StoredFileName = Guid.NewGuid().ToString(),
-                    RelativePath = "DB_STORAGE", /// Không còn dùng đường dẫn vật lý
-                    ContentType = file.ContentType,
-                    CreatedAtUtc = DateTime.UtcNow,
-                    FileData = fileData, /// Lưu dữ liệu nhị phân
-                    AttachmentType = "Result"
-                };
+                    using var memoryStream = new MemoryStream();
+                    await file.CopyToAsync(memoryStream);
+                    byte[] fileData = memoryStream.ToArray();
 
-                bool saved = await ReportService.SaveAttachmentAsync(reportId, attachment);
-                TempData[saved ? "Success" : "Error"] = saved ? "Tải ảnh minh chứng thành công." : "Lưu thông tin file thất bại.";
+                    var attachment = new HueResolve.Models.Model.ReportAttachment
+                    {
+                        Id = Guid.NewGuid(),
+                        ReportId = reportId,
+                        OriginalFileName = file.FileName,
+                        StoredFileName = Guid.NewGuid().ToString(),
+                        RelativePath = "DB_STORAGE",
+                        ContentType = file.ContentType,
+                        CreatedAtUtc = DateTime.UtcNow,
+                        FileData = fileData,
+                        AttachmentType = "Result"
+                    };
+
+                    await ReportService.SaveAttachmentAsync(reportId, attachment);
+                }
+                TempData["Success"] = "Tải minh chứng thành công.";
             }
             catch (Exception)
             {

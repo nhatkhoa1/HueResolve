@@ -1,4 +1,4 @@
-﻿@{
+@{
     string currentController = ViewContext.RouteData.Values["Controller"]?.ToString() ?? "";
     string currentAction = ViewContext.RouteData.Values["Action"]?.ToString() ?? "";
 }
@@ -60,8 +60,9 @@
         }
 
         .menu-item.active {
-            background: #eef2ff;
-            color: var(--handler-indigo);
+            background: var(--handler-primary);
+            color: #ffffff;
+            box-shadow: 0px 5px 14px rgba(67, 24, 255, 0.25);
         }
 
     .dept-info {
@@ -75,9 +76,9 @@
 </style>
 
 <div id="sidebar-wrapper">
-    <div class="sidebar-brand">
-        <span class="fw-bolder fs-5" style="color: var(--handler-indigo);">
-            <i class="fa-solid fa-shield-halved me-2"></i>HUE RESOLVE
+    <div class="sidebar-brand text-center">
+        <span class="fw-bolder fs-4" style="color: var(--text-main);">
+            <i class="fa-solid fa-shield-halved me-2 text-primary"></i>HUE RESOLVE
         </span>
     </div>
 
@@ -94,7 +95,7 @@
 
         <div class="nav-label">Quản lý</div>
 
-        <a href="@Url.Action("Index", "Report", new { status = "HoanThanh" })" class="menu-item @(currentAction == "History" ? "active" : "")">
+        <a href="@Url.Action("History", "Report")" class="menu-item @(currentController == "Report" && currentAction == "History" ? "active" : "")">
             <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử xử lý
         </a>
 
