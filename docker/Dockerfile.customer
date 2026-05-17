@@ -1,0 +1,29 @@
+# Sử dụng SDK .NET 8.0 làm môi trường Build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
+WORKDIR /app
+
+# Sao chép các file .csproj và khôi phục (restore) dependencies
+COPY HueResolve.sln ./
+COPY HueResolve.Models/HueResolve.Models.csproj ./HueResolve.Models/
+COPY HueResolve.Data/HueResolve.Data.csproj ./HueResolve.Data/
+COPY HueResolve.Business/HueResolve.Business.csproj ./HueResolve.Business/
+COPY HueResolve.Customer/HueResolve.Custommer.csproj ./HueResolve.Customer/
+COPY HueResolve.Handler/HueResolve.Handler.csproj ./HueResolve.Handler/
+COPY HueResolve.Admin/HueResolve.Admin.csproj ./HueResolve.Admin/
+
+RUN dotnet restore
+
+# Sao chép toàn bộ mã nguồn và biên dịch (build) dự án Customer
+COPY . ./
+RUN dotnet publish HueResolve.Customer/HueResolve.Custommer.csproj -c Release -o out
+
+# Sử dụng ASP.NET Runtime làm môi trường chạy ứng dụng để tối ưu dung lượng
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+COPY --from=build-env /app/out .
+
+# Cấu hình cổng port chạy ứng dụng (Render/Railway mặc định sẽ map cổng này)
+ENV ASPNETCORE_URLS=http://+:8080
+EXPOSE 8080
+
+ENTRYPOINT ["dotnet", "HueResolve.Custommer.dll"]

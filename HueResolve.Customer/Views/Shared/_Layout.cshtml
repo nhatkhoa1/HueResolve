@@ -140,9 +140,191 @@
                 margin-right: 8px;
             }
         }
+
+        /* Intro Animation (Premium WOW version) */
+        .site-intro {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(-45deg, #0f172a, #1e293b, #0ea5e9, #2563eb);
+            background-size: 400% 400%;
+            animation: gradientBG 4s ease infinite;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.8s cubic-bezier(0.86, 0, 0.07, 1), opacity 0.8s ease;
+        }
+
+        .site-intro.fade-out {
+            transform: translateY(-100%);
+            opacity: 0;
+        }
+
+        .intro-glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px 60px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: card-reveal 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            transform: scale(0.9);
+            opacity: 0;
+            min-width: 320px;
+        }
+
+        .intro-icon-wrapper {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1000px;
+        }
+
+        .intro-logo {
+            font-size: 4rem;
+            color: #38bdf8;
+            z-index: 2;
+            animation: icon-flip 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.6));
+        }
+
+        .intro-rings {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 2px solid rgba(56, 189, 248, 0.3);
+            border-radius: 50%;
+            animation: ring-pulse 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+
+        .intro-rings.ring-2 {
+            animation-delay: 0.5s;
+            border-color: rgba(56, 189, 248, 0.15);
+        }
+
+        .intro-title {
+            font-weight: 800;
+            font-size: 3rem;
+            letter-spacing: -1px;
+            margin-bottom: 0.5rem;
+            opacity: 0;
+            animation: text-reveal 1s ease-out 0.5s forwards;
+        }
+
+        .text-gradient {
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .intro-subtitle {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            opacity: 0;
+            animation: text-reveal 1s ease-out 0.7s forwards;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+        }
+
+        .intro-loader-wrapper {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .intro-loader-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #38bdf8, #818cf8);
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+            animation: load-progress 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        body.intro-active {
+            overflow: hidden;
+        }
+
+        @@keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @@keyframes card-reveal {
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        @@keyframes icon-flip {
+            0% { transform: rotateY(180deg) scale(0.5); opacity: 0; }
+            50% { transform: rotateY(0deg) scale(1.2); opacity: 1; }
+            100% { transform: rotateY(0deg) scale(1); opacity: 1; }
+        }
+
+        @@keyframes ring-pulse {
+            0% { transform: scale(0.8); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        @@keyframes text-reveal {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @@keyframes load-progress {
+            0% { width: 0%; }
+            40% { width: 40%; }
+            70% { width: 75%; }
+            100% { width: 100%; }
+        }
     </style>
 </head>
 <body>
+    <!-- ═══ INTRO SCREEN ═══ -->
+    <div id="site-intro" class="site-intro">
+        <div class="intro-glass-card">
+            <div class="intro-icon-wrapper">
+                <i class="fa-solid fa-map-location-dot intro-logo"></i>
+                <div class="intro-rings"></div>
+                <div class="intro-rings ring-2"></div>
+            </div>
+            <h1 class="intro-title">
+                <span class="text-gradient">Hue</span>Resolve
+            </h1>
+            <p class="intro-subtitle">Khởi động hệ thống thông minh...</p>
+            
+            <div class="intro-loader-wrapper">
+                <div class="intro-loader-bar"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        if (sessionStorage.getItem('introShown')) {
+            document.getElementById('site-intro').style.display = 'none';
+        } else {
+            document.body.classList.add('intro-active');
+        }
+    </script>
+    <!-- ═══ END INTRO ═══ -->
+
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top py-3">
         <div class="container">
             <a class="navbar-brand text-primary d-flex align-items-center gap-2" href="@Url.Action("Index", "Home")">
@@ -311,6 +493,20 @@
                     if (bsAlert) bsAlert.close();
                 });
             }, 5000);
+
+            // Intro logic
+            const intro = document.getElementById('site-intro');
+            if (intro && !sessionStorage.getItem('introShown')) {
+                setTimeout(() => {
+                    intro.classList.add('fade-out');
+                    document.body.classList.remove('intro-active');
+                    sessionStorage.setItem('introShown', 'true');
+                    
+                    setTimeout(() => {
+                        intro.remove();
+                    }, 800);
+                }, 2800);
+            }
         });
     </script>
     <script>

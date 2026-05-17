@@ -1,0 +1,13 @@
+**/.git
+**/.github
+**/.vs
+**/.vscode
+**/.venv
+**/bin
+**/obj
+**/publish
+**/out
+*.user
+*.suo
+*.db
+read_docx.py
