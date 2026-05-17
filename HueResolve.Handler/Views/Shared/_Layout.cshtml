@@ -209,21 +209,62 @@
             70% { width: 75%; }
             100% { width: 100%; }
         }
+
+        .intro-glow-circle {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.08;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .circle-1 {
+            width: 300px;
+            height: 300px;
+            background: #f59e0b;
+            top: 20%;
+            left: 15%;
+            animation: float-1 12s ease-in-out infinite;
+        }
+
+        .circle-2 {
+            width: 350px;
+            height: 350px;
+            background: #10b981;
+            bottom: 20%;
+            right: 15%;
+            animation: float-2 15s ease-in-out infinite;
+        }
+
+        @@keyframes float-1 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(40px, 30px) scale(1.1); }
+        }
+
+        @@keyframes float-2 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-40px, -30px) scale(0.9); }
+        }
     </style>
 </head>
 <body>
     <!-- ═══ INTRO SCREEN ═══ -->
     <div id="site-intro" class="site-intro">
-        <div class="intro-glass-card">
-            <div class="intro-icon-wrapper">
+        <!-- Floating ambient glowing circles -->
+        <div class="intro-glow-circle circle-1"></div>
+        <div class="intro-glow-circle circle-2"></div>
+
+        <div class="intro-glass-card" style="transform-style: preserve-3d; transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 1s ease;">
+            <div class="intro-icon-wrapper" style="transform: translateZ(30px);">
                 <i class="fa-solid fa-hard-hat intro-logo"></i> <!-- Construction hat icon to match Handler login page -->
                 <div class="intro-rings"></div>
                 <div class="intro-rings ring-2"></div>
             </div>
-            <h1 class="intro-title">
+            <h1 class="intro-title" style="transform: translateZ(20px);">
                 HUE <span class="text-gradient">RESOLVE</span>
             </h1>
-            <p class="intro-subtitle">Đang đồng bộ dữ liệu xử lý hiện trường...</p>
+            <p class="intro-subtitle" style="transform: translateZ(15px); transition: opacity 0.3s ease;">Đang đồng bộ dữ liệu xử lý hiện trường...</p>
             
             <div class="intro-loader-wrapper">
                 <div class="intro-loader-bar"></div>
@@ -315,9 +356,46 @@
                 setInterval(loadHandlerNotifications, 60000);
             }
 
-            // Intro Screen Close Trigger for Handler
+            // Intro screen close and dynamic status trigger
             const intro = document.getElementById('site-intro');
             if (intro && !sessionStorage.getItem('handlerIntroShown')) {
+                // Dynamic text updates matching loading bar sequence
+                const statusTexts = [
+                    "Đang kết nối cổng đơn vị xử lý...",
+                    "Đang đồng bộ danh sách phản ánh...",
+                    "Đang tải bản đồ thực địa cố đô...",
+                    "Đồng bộ thành công! Sẵn sàng xử lý..."
+                ];
+                let textIndex = 0;
+                const subtitleEl = document.querySelector('.intro-subtitle');
+                if (subtitleEl) {
+                    const textInterval = setInterval(() => {
+                        textIndex++;
+                        if (textIndex < statusTexts.length) {
+                            subtitleEl.style.opacity = 0;
+                            setTimeout(() => {
+                                subtitleEl.innerText = statusTexts[textIndex];
+                                subtitleEl.style.opacity = 1;
+                            }, 300);
+                        } else {
+                            clearInterval(textInterval);
+                        }
+                    }, 650);
+                }
+
+                // 3D Glass Tilt Interaction (Active after card fully revealed)
+                const card = document.querySelector('.intro-glass-card');
+                if (card) {
+                    setTimeout(() => {
+                        document.addEventListener('mousemove', (e) => {
+                            const xAxis = (window.innerWidth / 2 - e.pageX) / 35;
+                            const yAxis = (window.innerHeight / 2 - e.pageY) / 35;
+                            card.style.transition = "transform 0.1s ease-out";
+                            card.style.transform = `scale(1) rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+                        });
+                    }, 1000);
+                }
+
                 setTimeout(() => {
                     intro.classList.add('fade-out');
                     document.body.classList.remove('intro-active');
