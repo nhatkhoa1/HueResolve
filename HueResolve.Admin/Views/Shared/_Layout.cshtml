@@ -8,8 +8,192 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Intro Animation (Premium WOW Admin version, matches Login page branding) */
+        .site-intro {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(-45deg, #090d16, #0f172a, #1e293b, #0f172a);
+            background-size: 400% 400%;
+            animation: gradientBG 4s ease infinite;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.8s cubic-bezier(0.86, 0, 0.07, 1), opacity 0.8s ease;
+        }
+
+        .site-intro.fade-out {
+            transform: translateY(-100%);
+            opacity: 0;
+        }
+
+        .intro-glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 28px;
+            padding: 50px 70px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6);
+            animation: card-reveal 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            transform: scale(0.9);
+            opacity: 0;
+            min-width: 340px;
+        }
+
+        .intro-icon-wrapper {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1000px;
+        }
+
+        .intro-logo {
+            font-size: 4.2rem;
+            color: #3b82f6; /* Vibrant Blue matching --accent-blue */
+            z-index: 2;
+            animation: icon-flip 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.6));
+        }
+
+        .intro-rings {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-radius: 50%;
+            animation: ring-pulse 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+
+        .intro-rings.ring-2 {
+            animation-delay: 0.5s;
+            border-color: rgba(16, 185, 129, 0.15); /* Accent success green ring */
+        }
+
+        .intro-title {
+            font-weight: 800;
+            font-size: 3rem;
+            letter-spacing: -1px;
+            margin-bottom: 0.6rem;
+            opacity: 0;
+            animation: text-reveal 1s ease-out 0.5s forwards;
+            color: #ffffff;
+        }
+
+        .text-gradient {
+            background: linear-gradient(to right, #10b981, #34d399); /* Emerald Green gradient matches Login RESOLVE */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .intro-subtitle {
+            font-size: 1.15rem;
+            color: #94a3b8;
+            opacity: 0;
+            animation: text-reveal 1s ease-out 0.7s forwards;
+            margin-bottom: 35px;
+            letter-spacing: 1px;
+        }
+
+        .intro-loader-wrapper {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .intro-loader-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #3b82f6, #10b981); /* Blue to Green gradient matches brand theme */
+            border-radius: 4px;
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.5);
+            animation: load-progress 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        body.intro-active {
+            overflow: hidden;
+            max-height: 100vh;
+        }
+
+        @@keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @@keyframes card-reveal {
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        @@keyframes icon-flip {
+            0% { transform: rotateY(180deg) scale(0.5); opacity: 0; }
+            50% { transform: rotateY(0deg) scale(1.2); opacity: 1; }
+            100% { transform: rotateY(0deg) scale(1); opacity: 1; }
+        }
+
+        @@keyframes ring-pulse {
+            0% { transform: scale(0.8); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        @@keyframes text-reveal {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @@keyframes load-progress {
+            0% { width: 0%; }
+            45% { width: 45%; }
+            75% { width: 80%; }
+            100% { width: 100%; }
+        }
+    </style>
 </head>
 <body class="d-flex">
+    <!-- ═══ INTRO SCREEN ═══ -->
+    <div id="site-intro" class="site-intro">
+        <div class="intro-glass-card">
+            <div class="intro-icon-wrapper">
+                <i class="fa-solid fa-shield-halved intro-logo"></i> <!-- Shield icon to match Admin login page -->
+                <div class="intro-rings"></div>
+                <div class="intro-rings ring-2"></div>
+            </div>
+            <h1 class="intro-title">
+                HUE <span class="text-gradient">RESOLVE</span>
+            </h1>
+            <p class="intro-subtitle">Đang bảo mật quyền kiểm soát hệ thống...</p>
+            
+            <div class="intro-loader-wrapper">
+                <div class="intro-loader-bar"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        if (sessionStorage.getItem('adminIntroShown')) {
+            document.getElementById('site-intro').style.display = 'none';
+        } else {
+            document.body.classList.add('intro-active');
+        }
+    </script>
+    <!-- ═══ END INTRO ═══ -->
     <partial name="_Sidebar" />
 
     <div class="w-100">
@@ -53,6 +237,20 @@
                     if (bsAlert) bsAlert.close();
                 });
             }, 5000);
+
+            // Intro screen close trigger
+            const intro = document.getElementById('site-intro');
+            if (intro && !sessionStorage.getItem('adminIntroShown')) {
+                setTimeout(() => {
+                    intro.classList.add('fade-out');
+                    document.body.classList.remove('intro-active');
+                    sessionStorage.setItem('adminIntroShown', 'true');
+                    
+                    setTimeout(() => {
+                        intro.remove();
+                    }, 800);
+                }, 2800);
+            }
         });
     </script>
     @await RenderSectionAsync("Scripts", required: false)
