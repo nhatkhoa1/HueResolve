@@ -15,7 +15,7 @@ namespace HueResolve.Business.Services
     /// </summary>
     public static class AIService
     {
-        private const string AI_MICROSERVICE_URL = "http://127.0.0.1:8000";
+        private static string AI_MICROSERVICE_URL => Environment.GetEnvironmentVariable("AI_MICROSERVICE_URL") ?? "http://127.0.0.1:8000";
 
         // Dùng Lazy để khởi tạo một lần duy nhất, thread-safe
         private static readonly Lazy<HttpClient> _lazyClient = new(() =>
